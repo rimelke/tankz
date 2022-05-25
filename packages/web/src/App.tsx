@@ -5,6 +5,7 @@ interface IMapObject {
   y: number
   width: number
   height: number
+  health?: number
 }
 
 const map: IMapObject[] = [
@@ -173,17 +174,34 @@ const App = () => {
       y: 0
     }
 
+    const bullets: {
+      x: number
+      y: number
+      rotation: number
+    }[] = []
+
     const render = (ctx: CanvasRenderingContext2D) => {
       ctx.clearRect(0, 0, 800, 500)
 
-      ctx.fillStyle = '#000000'
-      map.forEach(({ x, y, width, height }) => {
+      ctx.fillStyle = '#555555'
+
+      bullets.forEach(({ x, y }) => {
+        ctx.beginPath()
+        ctx.arc(x, y, 3, 0, Math.PI * 2)
+        ctx.fill()
+      })
+
+      map.forEach(({ x, y, width, height, health }) => {
+        ctx.fillStyle = `rgba(0, 0, 0, ${
+          health ? Math.ceil(health / 10) / 10 : 1
+        })`
         ctx.fillRect(x, y, width, height)
       })
 
       const initialX = tank.width / 2
       const initialY = tank.height / 2
       const rAngle = (Math.PI * tank.rotation) / 180
+
       ctx.translate(tank.x + initialX, tank.y + initialY)
       ctx.rotate(rAngle)
       tank.figures.forEach(({ x, y, width, height, color }) => {
@@ -200,14 +218,51 @@ const App = () => {
 
     const STEP_ROTATION = 0.75
     const STEP_MOVE = 0.75
+    const STEP_BULLET = 4.5
+    const DEFAULT_HEALTH = 100
+    const BULLET_POWER = 2.5
 
-    const keyMap: Record<string, boolean> = {}
+    const getMouth = () => {
+      const x = tank.y
+      const y = tank.x + tank.width / 2
+
+      const radiansAngle = (Math.PI * tank.rotation) / 180
+
+      const rSin = Math.sin(radiansAngle)
+      const rCos = Math.cos(radiansAngle)
+
+      const xo = tank.y + tank.height / 2
+      const yo = tank.x + tank.width / 2
+
+      const xr = yo - (x - xo) * rSin + (y - yo) * rCos
+      const yr = xo + (x - xo) * rCos + (y - yo) * rSin
+
+      return { x: xr, y: yr }
+    }
+
+    const keyMap: Record<string, boolean> = {
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false
+    }
+
     document.onkeydown = (e) => {
       keyMap[e.key] = true
     }
 
     document.onkeyup = (e) => {
       keyMap[e.key] = false
+
+      if (e.code === 'Space') {
+        const { x, y } = getMouth()
+
+        bullets.push({
+          x,
+          y,
+          rotation: tank.rotation
+        })
+      }
     }
 
     const getTankBoundaries = (
@@ -352,11 +407,60 @@ const App = () => {
       tank.rotation = newRotation
     }
 
+    const moveBullet = (
+      bullet: {
+        x: number
+        y: number
+        rotation: number
+      },
+      index: number
+    ) => {
+      const radiansAngle = (Math.PI * bullet.rotation) / 180
+
+      const rSin = Math.sin(radiansAngle)
+      const rCos = Math.cos(radiansAngle)
+
+      const newX = bullet.x + STEP_BULLET * rSin
+      const newY = bullet.y - STEP_BULLET * rCos
+
+      if (
+        newX < 0 ||
+        newX > 800 ||
+        newY < 0 ||
+        newY > 500 ||
+        map.some(({ x, y, width, height }, mapIndex) => {
+          const isCollised =
+            newX > x && newX < x + width && newY > y && newY < y + height
+
+          if (isCollised) {
+            const mapObject = map[mapIndex]
+
+            mapObject.health =
+              (mapObject.health || DEFAULT_HEALTH) - BULLET_POWER
+
+            if (mapObject.health <= 0) map.splice(mapIndex, 1)
+          }
+
+          return isCollised
+        })
+      ) {
+        bullets.splice(index, 1)
+        return
+      }
+
+      bullet.x = newX
+      bullet.y = newY
+    }
+
     const interval = setInterval(() => {
       if (keyMap.ArrowLeft || keyMap.a) rotateTank(-STEP_ROTATION)
       if (keyMap.ArrowRight || keyMap.d) rotateTank(STEP_ROTATION)
       if (keyMap.ArrowUp || keyMap.w) moveTank(STEP_MOVE)
       if (keyMap.ArrowDown || keyMap.s) moveTank(-STEP_MOVE)
+
+      bullets.forEach((bullet, index) => {
+        moveBullet(bullet, index)
+      })
     }, 10)
 
     return () => {

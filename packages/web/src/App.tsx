@@ -198,8 +198,8 @@ const App = () => {
 
     render(ctx)
 
-    const STEP_ROTATION = 1
-    const STEP_MOVE = 1
+    const STEP_ROTATION = 0.75
+    const STEP_MOVE = 0.75
 
     const keyMap: Record<string, boolean> = {}
     document.onkeydown = (e) => {
@@ -223,32 +223,110 @@ const App = () => {
       const xo = tankY + tank.height / 2
       const yo = tankX + tank.width / 2
 
-      const points: { x: number; y: number }[] = [
+      const bodyPoints: { x: number; y: number }[] = [
         { x: tankY + tank.can, y: tankX },
         { x: tankY + tank.can, y: tankX + tank.width },
         { x: tankY + tank.height, y: tankX + tank.width },
-        { x: tankY + tank.height, y: tankX },
+        { x: tankY + tank.height, y: tankX }
+      ]
+        .map(({ x, y }) => {
+          const xr = yo - (x - xo) * rSin + (y - yo) * rCos
+          const yr = xo + (x - xo) * rCos + (y - yo) * rSin
+
+          return { x: xr, y: yr }
+        })
+        .sort((a, b) => a.x + a.y - (b.x + b.y))
+
+      const canPoints: { x: number; y: number }[] = [
         { x: tankY, y: tankX + (tank.width - tank.canW) / 2 },
-        { x: tankY, y: tankX + (tank.width + tank.canW) / 2 }
-      ].map(({ x, y }) => {
-        const xr = xo + (x - xo) * rCos + (y - yo) * rSin
-        const yr = yo - (x - xo) * rSin + (y - yo) * rCos
+        { x: tankY, y: tankX + (tank.width + tank.canW) / 2 },
+        { x: tankY + tank.can, y: tankX + (tank.width + tank.canW) / 2 },
+        { x: tankY + tank.can, y: tankX + (tank.width - tank.canW) / 2 }
+      ]
+        .map(({ x, y }) => {
+          const xr = yo - (x - xo) * rSin + (y - yo) * rCos
+          const yr = xo + (x - xo) * rCos + (y - yo) * rSin
 
-        return { x: xr, y: yr }
-      })
+          return { x: xr, y: yr }
+        })
+        .sort((a, b) => a.x + a.y - (b.x + b.y))
 
-      return {
-        minX: Math.min(...points.map(({ x }) => x)),
-        maxX: Math.max(...points.map(({ x }) => x)),
-        minY: Math.min(...points.map(({ y }) => y)),
-        maxY: Math.max(...points.map(({ y }) => y))
-      }
+      return { bodyPoints, canPoints }
+    }
+
+    const intersect = (
+      line1: { x1: number; y1: number; x2: number; y2: number },
+      line2: { x1: number; y1: number; x2: number; y2: number }
+    ) => {
+      if (
+        (line1.x1 === line1.x2 && line1.y1 === line1.y2) ||
+        (line2.x1 === line2.x2 && line2.y1 === line2.y2)
+      )
+        return false
+
+      const denominator =
+        (line2.y2 - line2.y1) * (line1.x2 - line1.x1) -
+        (line2.x2 - line2.x1) * (line1.y2 - line1.y1)
+
+      if (denominator === 0) return false
+
+      const ua =
+        ((line2.x2 - line2.x1) * (line1.y1 - line2.y1) -
+          (line2.y2 - line2.y1) * (line1.x1 - line2.x1)) /
+        denominator
+      const ub =
+        ((line1.x2 - line1.x1) * (line1.y1 - line2.y1) -
+          (line1.y2 - line1.y1) * (line1.x1 - line2.x1)) /
+        denominator
+
+      if (ua < 0 || ua > 1 || ub < 0 || ub > 1) return false
+
+      const x = line1.x1 + ua * (line1.x2 - line1.x1)
+      const y = line1.y1 + ua * (line1.y2 - line1.y1)
+
+      return { x, y }
     }
 
     const isCollision = (x: number, y: number, rotation: number) => {
-      const { maxX, maxY, minX, minY } = getTankBoundaries(x, y, rotation)
+      const points = getTankBoundaries(x, y, rotation)
 
-      return minY < 0 || maxY > 500 || minX < 0 || maxX > 800
+      return (
+        points.bodyPoints.some(
+          ({ x, y }) => x < 0 || x > 800 || y < 0 || y > 500
+        ) ||
+        points.canPoints
+          .slice(0, 2)
+          .some(({ x, y }) => x < 0 || x > 800 || y < 0 || y > 500) ||
+        map.some(({ x, y, width, height }) => {
+          const lines = [
+            { x1: x, y1: y, x2: x + width, y2: y },
+            { x1: x, y1: y, x2: x, y2: y + height },
+            { x1: x + width, y1: y, x2: x + width, y2: y + height },
+            { x1: x, y1: y + height, x2: x + width, y2: y + height }
+          ]
+
+          const aPoints = [
+            ...points.bodyPoints,
+            ...points.canPoints,
+            points.bodyPoints[0]
+          ]
+
+          const tankLines = []
+
+          for (let i = 0; i < aPoints.length - 1; i++) {
+            const line = {
+              x1: aPoints[i].x,
+              y1: aPoints[i].y,
+              x2: aPoints[i + 1].x,
+              y2: aPoints[i + 1].y
+            }
+
+            tankLines.push(line)
+          }
+
+          return tankLines.some((line) => lines.some((l) => intersect(line, l)))
+        })
+      )
     }
 
     const moveTank = (step: number) => {
@@ -279,7 +357,7 @@ const App = () => {
       if (keyMap.ArrowRight || keyMap.d) rotateTank(STEP_ROTATION)
       if (keyMap.ArrowUp || keyMap.w) moveTank(STEP_MOVE)
       if (keyMap.ArrowDown || keyMap.s) moveTank(-STEP_MOVE)
-    }, 20)
+    }, 10)
 
     return () => {
       cancelAnimationFrame(animationCode)

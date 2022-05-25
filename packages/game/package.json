@@ -1,0 +1,6 @@
+{
+  "name": "@tankz/game",
+  "version": "1.0.0",
+  "main": "createGame.ts",
+  "license": "MIT"
+}

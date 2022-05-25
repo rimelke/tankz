@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "react": "^18.1.0",
-    "react-dom": "^18.1.0"
+    "react-dom": "^18.1.0",
+    "@tankz/game": "*"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.10",

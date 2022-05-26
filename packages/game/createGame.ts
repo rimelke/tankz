@@ -20,6 +20,7 @@ type IContinuosAction =
   | 'TurnLeft'
   | 'TurnRight'
 type ISingleAction = 'Fire'
+type IAction = IContinuosAction | ISingleAction
 
 interface ITank {
   id: string
@@ -277,10 +278,7 @@ const createGame = (): IGame => {
     })
   }
 
-  const actionsCalls: Record<
-    IContinuosAction | ISingleAction,
-    (tank: ITank) => void
-  > = {
+  const actionsCalls: Record<IAction, (tank: ITank) => void> = {
     MoveForward: (tank) => moveTank(tank, STEP_MOVE),
     MoveBackward: (tank) => moveTank(tank, -STEP_MOVE),
     TurnLeft: (tank) => rotateTank(tank, -STEP_ROTATION),
@@ -291,7 +289,7 @@ const createGame = (): IGame => {
   const interval = setInterval(() => {
     tanks.forEach((tank) => {
       Object.entries(tank.actions).forEach(([action, isActive]) => {
-        if (isActive) actionsCalls[action](tank)
+        if (isActive) actionsCalls[action as IAction](tank)
       })
     })
 

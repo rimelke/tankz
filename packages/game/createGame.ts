@@ -3,6 +3,7 @@ import createTank, { ITank } from './createTank'
 import map1 from './maps/map1'
 import checkPointsCollision from './utils/checkPointsCollision'
 import { ILine } from './utils/getLinesIntersection'
+import getTankPoints from './utils/getTankPoints'
 
 export interface IPosition {
   x: number
@@ -106,15 +107,29 @@ const createGame = (): IGame => {
     })
   }, 10)
 
+  const checkCollision = (points: IPosition[]) =>
+    checkPointsCollision(
+      points,
+      map.reduce((prevArr, obj) => prevArr.concat(obj.lines), [] as ILine[])
+    )
+
   const addTank = (id: string) => {
+    const getRandomPosition = () => {
+      const x = Math.random() * 800
+      const y = Math.random() * 500
+      const direction = Math.random() * 360
+
+      if (checkCollision(getTankPoints(x, y, direction)))
+        return getRandomPosition()
+
+      return { x, y, direction }
+    }
+
     const tank = createTank({
       id,
+      defaultPos: getRandomPosition(),
       addBullet: (pos, direction) => bullets.push({ pos, direction }),
-      checkCollision: (points) =>
-        checkPointsCollision(
-          points,
-          map.reduce((prevArr, obj) => prevArr.concat(obj.lines), [] as ILine[])
-        )
+      checkCollision
     })
 
     tanks.push(tank)

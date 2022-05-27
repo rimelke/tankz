@@ -1,9 +1,16 @@
-import { BULLET_POWER, DEFAULT_HEALTH, STEP_BULLET } from './constants'
+import {
+  BULLET_POWER,
+  DEFAULT_HEALTH,
+  MAP_SIZE,
+  STEP_BULLET
+} from './constants'
 import createTank, { ITank } from './createTank'
 import map1 from './maps/map1'
+import checkLimitsCollision from './utils/checkLimitsCollision'
+import checkPointInTank from './utils/checkPointInTank'
 import checkPointsCollision from './utils/checkPointsCollision'
 import { ILine } from './utils/getLinesIntersection'
-import getTankPoints from './utils/getTankPoints'
+import getTankPoints, { getRawTankPoints } from './utils/getTankPoints'
 
 export interface IPosition {
   x: number
@@ -74,10 +81,7 @@ const createGame = (): IGame => {
     const newY = bullet.pos.y - STEP_BULLET * rCos
 
     if (
-      newX < 0 ||
-      newX > 800 ||
-      newY < 0 ||
-      newY > 500 ||
+      checkLimitsCollision([{ x: newX, y: newY }]) ||
       map.some(({ x, y, width, height }, mapIndex) => {
         const isCollised =
           newX > x && newX < x + width && newY > y && newY < y + height
@@ -88,6 +92,27 @@ const createGame = (): IGame => {
           mapObject.health = (mapObject.health || DEFAULT_HEALTH) - BULLET_POWER
 
           if (mapObject.health <= 0) map.splice(mapIndex, 1)
+        }
+
+        return isCollised
+      }) ||
+      tanks.some((tank, tankIndex) => {
+        const isCollised = checkPointInTank(
+          { x: newX, y: newY },
+          getRawTankPoints(
+            tank.state.pos.x,
+            tank.state.pos.y,
+            tank.state.direction
+          )
+        )
+
+        if (isCollised) {
+          tank.state.health -= BULLET_POWER
+
+          if (tank.state.health <= 0) {
+            tanks.splice(tankIndex, 1)
+            tank.killTank()
+          }
         }
 
         return isCollised
@@ -107,19 +132,23 @@ const createGame = (): IGame => {
     })
   }, 10)
 
-  const checkCollision = (points: IPosition[]) =>
+  const checkTankCollision = (id: string, points: IPosition[]) =>
+    checkLimitsCollision(points) ||
     checkPointsCollision(
       points,
       map.reduce((prevArr, obj) => prevArr.concat(obj.lines), [] as ILine[])
+    ) ||
+    tanks.some((tank) =>
+      tank.id === id ? false : checkPointsCollision(points, tank.getTankLines())
     )
 
   const addTank = (id: string) => {
     const getRandomPosition = () => {
-      const x = Math.random() * 800
-      const y = Math.random() * 500
+      const x = Math.random() * MAP_SIZE.width
+      const y = Math.random() * MAP_SIZE.height
       const direction = Math.random() * 360
 
-      if (checkCollision(getTankPoints(x, y, direction)))
+      if (checkTankCollision(id, getTankPoints(x, y, direction)))
         return getRandomPosition()
 
       return { x, y, direction }
@@ -129,7 +158,7 @@ const createGame = (): IGame => {
       id,
       defaultPos: getRandomPosition(),
       addBullet: (pos, direction) => bullets.push({ pos, direction }),
-      checkCollision
+      checkCollision: (points) => checkTankCollision(id, points)
     })
 
     tanks.push(tank)

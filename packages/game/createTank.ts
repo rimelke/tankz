@@ -28,7 +28,7 @@ export interface ITank {
   id: string
   type: TankType
   state: ITankState
-  getTankLines(): void
+  getTankLines(): ILine[]
   startAction(action: IContinuosAction): void
   stopAction(action: IContinuosAction): void
   singleAction(action: ISingleAction): void

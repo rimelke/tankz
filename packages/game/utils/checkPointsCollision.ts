@@ -1,4 +1,3 @@
-import { MAP_SIZE } from '../constants'
 import { IPosition } from '../createGame'
 import getLinesIntersection, { ILine } from './getLinesIntersection'
 
@@ -22,32 +21,15 @@ const checkPointsCollision = (points: IPosition[], otherLines: ILine[]) => {
     lines.push(line)
   }
 
-  return (
-    points.some(
-      ({ x, y }) => x < 0 || x > MAP_SIZE.width || y < 0 || y > MAP_SIZE.height
-    ) ||
-    otherLines.some((otherLine) =>
-      lines.some((line) => getLinesIntersection(otherLine, line))
-    )
-    // map.some(({ x, y, width, height }) => {
-    //   const mapLines: ILine[] = [
-    //     { point1: { x, y }, point2: { x: x + width, y } },
-    //     { point1: { x, y }, point2: { x, y: y + height } },
-    //     {
-    //       point1: { x: x + width, y },
-    //       point2: { x: x + width, y: y + height }
-    //     },
-    //     {
-    //       point1: { x, y: y + height },
-    //       point2: { x: x + width, y: y + height }
-    //     }
-    //   ]
-
-    //   return mapLines.some((mapLine) =>
-    //     lines.some((line) => getLinesIntersection(mapLine, line))
-    //   )
-    // })
+  const x = otherLines.some((otherLine) =>
+    lines.some((line) => getLinesIntersection(otherLine, line))
   )
+
+  console.log('lines', lines)
+  console.log('otherLines', otherLines)
+  console.log('x', x)
+
+  return x
 }
 
 export default checkPointsCollision

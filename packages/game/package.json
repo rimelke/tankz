@@ -1,6 +1,6 @@
 {
   "name": "@tankz/game",
   "version": "1.0.0",
-  "main": "createGame.ts",
+  "main": "factories/createGame.ts",
   "license": "MIT"
 }

@@ -1,8 +1,8 @@
-import { IPosition } from '../createGame'
+import { ISimplePosition } from '../types'
 
 export interface ILine {
-  point1: IPosition
-  point2: IPosition
+  point1: ISimplePosition
+  point2: ISimplePosition
 }
 
 const getLinesIntersection = (line1: ILine, line2: ILine) => {

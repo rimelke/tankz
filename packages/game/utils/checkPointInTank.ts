@@ -1,16 +1,21 @@
 import { TANK_SIZE } from '../constants'
-import { IPosition } from '../createGame'
+import { ISimplePosition } from '../types'
 import { IRawPoints } from './getTankPoints'
 
-type ITriangle = [IPosition, IPosition, IPosition]
-export type IRectangle = [IPosition, IPosition, IPosition, IPosition]
+type ITriangle = [ISimplePosition, ISimplePosition, ISimplePosition]
+export type IRectangle = [
+  ISimplePosition,
+  ISimplePosition,
+  ISimplePosition,
+  ISimplePosition
+]
 
 const TANK_BODY_AREA =
   TANK_SIZE.width * (TANK_SIZE.height - TANK_SIZE.canHeight) * 100
 const TANK_CANNON_AREA = TANK_SIZE.canWidth * TANK_SIZE.canHeight * 100
 
 const checkPointInTank = (
-  point: IPosition,
+  point: ISimplePosition,
   { body, cannon }: IRawPoints
 ): boolean => {
   const getTriangleArea = ([p1, p2, p3]: ITriangle) =>

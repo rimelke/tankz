@@ -10,6 +10,8 @@ const Container = styled(Link)`
   text-decoration: none;
   color: unset;
   transition: all 0.2s ease-in-out;
+  position: relative;
+  z-index: 1;
 
   &:hover {
     transform: scale(1.1);

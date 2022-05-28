@@ -1,6 +1,6 @@
-import { ITankFigure } from '../tankTypes'
+import { ITankFigure } from './index'
 
-const tank1: ITankFigure[] = [
+const model1: ITankFigure[] = [
   {
     x: 10,
     y: 28,
@@ -66,4 +66,4 @@ const tank1: ITankFigure[] = [
   }
 ]
 
-export default tank1
+export default model1

@@ -1,7 +1,10 @@
-import { IPosition } from '../createGame'
+import { ISimplePosition } from '../types'
 import getLinesIntersection, { ILine } from './getLinesIntersection'
 
-const checkPointsCollision = (points: IPosition[], otherLines: ILine[]) => {
+const checkPointsCollision = (
+  points: ISimplePosition[],
+  otherLines: ILine[]
+) => {
   const aPoints = [...points, points[0]]
 
   const lines: ILine[] = []

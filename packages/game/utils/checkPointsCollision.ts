@@ -21,15 +21,9 @@ const checkPointsCollision = (points: IPosition[], otherLines: ILine[]) => {
     lines.push(line)
   }
 
-  const x = otherLines.some((otherLine) =>
+  return otherLines.some((otherLine) =>
     lines.some((line) => getLinesIntersection(otherLine, line))
   )
-
-  console.log('lines', lines)
-  console.log('otherLines', otherLines)
-  console.log('x', x)
-
-  return x
 }
 
 export default checkPointsCollision

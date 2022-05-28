@@ -11,7 +11,8 @@ module.exports = {
     port: '3000',
     hot: true,
     liveReload: true,
-    static: path.join(__dirname, 'public')
+    static: path.join(__dirname, 'public'),
+    historyApiFallback: true
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx']

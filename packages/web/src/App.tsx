@@ -7,7 +7,7 @@
 import './styles/global.css'
 import Routes from './routes'
 import Logo from './components/Logo'
-import { Container } from './styled'
+import { Container, MainContent } from './styled'
 
 // const continuosKeys: Record<string, IContinuosAction> = {
 //   ArrowUp: 'MoveForward',
@@ -119,9 +119,9 @@ import { Container } from './styled'
 const App = () => (
   <Container>
     <Logo />
-    <main>
+    <MainContent>
       <Routes />
-    </main>
+    </MainContent>
   </Container>
 )
 

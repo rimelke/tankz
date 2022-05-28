@@ -7,7 +7,6 @@ export const MenuContainer = styled.ul`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 5rem;
   gap: 3.5rem;
 `
 
@@ -20,6 +19,7 @@ export const MenuItem = styled.li`
     transform: scale(1.1);
   }
 `
+
 export const CustomLink = styled(Link)`
   text-decoration: none;
   color: unset;

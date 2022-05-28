@@ -1,4 +1,3 @@
-import Title from '../../components/Title'
 import {
   Content,
   ContentTitle,
@@ -7,7 +6,6 @@ import {
   LargeKey,
   MoveKeyboard,
   MidText,
-  Container,
   BackgroundCanvas
 } from './styled'
 import {
@@ -122,45 +120,42 @@ const Instructions = () => {
   }, [])
 
   return (
-    <PageContainer>
+    <PageContainer title="Instructions">
       <BackgroundCanvas ref={canvasRef} />
-      <Container>
-        <Title>Instructions</Title>
-        <Content>
-          <ContentTitle>Move</ContentTitle>
-          <Line>
-            <MoveKeyboard>
+      <Content>
+        <ContentTitle>Move</ContentTitle>
+        <Line>
+          <MoveKeyboard>
+            <Key>
+              <ArrowSmUpIcon />
+            </Key>
+            <Line>
               <Key>
-                <ArrowSmUpIcon />
+                <ArrowSmLeftIcon />
               </Key>
-              <Line>
-                <Key>
-                  <ArrowSmLeftIcon />
-                </Key>
-                <Key>
-                  <ArrowSmDownIcon />
-                </Key>
-                <Key>
-                  <ArrowSmRightIcon />
-                </Key>
-              </Line>
-            </MoveKeyboard>
-            <MidText>or</MidText>
-            <MoveKeyboard>
-              <Key>W</Key>
-              <Line>
-                <Key>A</Key>
-                <Key>S</Key>
-                <Key>D</Key>
-              </Line>
-            </MoveKeyboard>
-          </Line>
-        </Content>
-        <Content>
-          <ContentTitle>Fire</ContentTitle>
-          <LargeKey>Space</LargeKey>
-        </Content>
-      </Container>
+              <Key>
+                <ArrowSmDownIcon />
+              </Key>
+              <Key>
+                <ArrowSmRightIcon />
+              </Key>
+            </Line>
+          </MoveKeyboard>
+          <MidText>or</MidText>
+          <MoveKeyboard>
+            <Key>W</Key>
+            <Line>
+              <Key>A</Key>
+              <Key>S</Key>
+              <Key>D</Key>
+            </Line>
+          </MoveKeyboard>
+        </Line>
+      </Content>
+      <Content>
+        <ContentTitle>Fire</ContentTitle>
+        <LargeKey>Space</LargeKey>
+      </Content>
     </PageContainer>
   )
 }

@@ -1,14 +1,5 @@
 import styled from 'styled-components'
 
-export const Container = styled.div`
-  border: 0.4rem solid black;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rem;
-`
-
 export const Content = styled.div`
   display: flex;
   flex-direction: column;

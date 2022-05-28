@@ -4,6 +4,8 @@ import { TANK_SIZE } from '@tankz/game/constants'
 import tanksTypes from '@tankz/game/tankTypes'
 import { IContinuosAction, ISingleAction } from '@tankz/game/createTank'
 
+import './styles/global.css'
+
 const continuosKeys: Record<string, IContinuosAction> = {
   ArrowUp: 'MoveForward',
   ArrowDown: 'MoveBackward',
@@ -97,9 +99,10 @@ const App = () => {
     <div
       style={{
         display: 'flex',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center'
       }}>
+      <h1>TankZ</h1>
       <canvas
         ref={canvasRef}
         width={800}

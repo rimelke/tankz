@@ -1,19 +1,26 @@
-type IValidationFunction = <T>(key: string, data: any) => T
+import * as validators from './validators'
 
-export type IValidator = () => IValidationFunction
+export type IValidator = <T>(key: string, data: any, value?: any) => T
 
-const makeValidator = <T>(schema: Record<keyof T, IValidationFunction[]>) => {
+type ISchema =
+  | keyof typeof validators
+  | {
+      type: keyof typeof validators
+      value: any
+    }
+
+const makeValidator = <T>(schema: Record<keyof T, ISchema[]>) => {
   const validate = (data: T) => {
     Object.keys(schema).forEach((key) => {
-      schema[key].forEach((validationFunction: IValidationFunction) => {
-        data[key] = validationFunction(key, data[key])
+      schema[key].forEach((validatorName: keyof typeof validators) => {
+        data[key] = validators[validatorName](key, data[key])
       })
     })
 
     return data
   }
 
-  return { validate }
+  return { validate, schema }
 }
 
 export default makeValidator

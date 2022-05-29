@@ -7,26 +7,6 @@ describe('createPlayer', () => {
   const hashProvider = makeBcryptHashProvider()
   const createPlayer = makeCreatePlayer({ playerRepository, hashProvider })
 
-  it('should not create a player if nickname is not provided', async () => {
-    const data = {
-      password: '123456'
-    }
-
-    expect(createPlayer(data as ICreatePlayerDTO)).rejects.toThrow(
-      'nickname is required'
-    )
-  })
-
-  it('should not create a player if password is not provided', async () => {
-    const data = {
-      nickname: 'nickname'
-    }
-
-    expect(createPlayer(data as ICreatePlayerDTO)).rejects.toThrow(
-      'password is required'
-    )
-  })
-
   it('should create a player', async () => {
     const data: ICreatePlayerDTO = {
       nickname: 'testnickname',

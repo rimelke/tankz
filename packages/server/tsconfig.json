@@ -6,7 +6,9 @@
       "@useCases/*": ["./src/useCases/*"],
       "@repositories/*": ["./src/repositories/*"],
       "@entities/*": ["./src/entities/*"],
-      "@tests/*": ["./tests/*"]
+      "@tests/*": ["./tests/*"],
+      "@providers/*": ["./src/providers/*"],
+      "@validation/*": ["./src/validation/*"]
     }
   }
 }

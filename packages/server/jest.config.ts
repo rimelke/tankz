@@ -6,7 +6,6 @@ export default {
   coverageProvider: 'v8',
   preset: 'ts-jest',
   testEnvironment: 'node',
-  // modulePaths: [compilerOptions.baseUrl],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
     prefix: '<rootDir>/'
   })

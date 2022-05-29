@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@useCases/*": ["./src/useCases/*"],
+      "@repositories/*": ["./src/repositories/*"],
+      "@entities/*": ["./src/entities/*"],
+      "@tests/*": ["./tests/*"]
+    }
+  }
+}

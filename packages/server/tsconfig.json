@@ -8,7 +8,8 @@
       "@entities/*": ["./src/entities/*"],
       "@tests/*": ["./tests/*"],
       "@providers/*": ["./src/providers/*"],
-      "@validation/*": ["./src/validation/*"]
+      "@validation/*": ["./src/validation/*"],
+      "@main/*": ["./src/main/*"]
     }
   }
 }

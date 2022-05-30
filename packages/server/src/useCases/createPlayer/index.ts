@@ -1,5 +1,6 @@
 import PlayerRepository from '@repositories/PlayerRepository'
 import HashProvider from '@providers/HashProvider'
+import AppError from '@errors/AppError'
 
 interface IMakeCreatePlayerProps {
   playerRepository: PlayerRepository
@@ -18,7 +19,7 @@ const makeCreatePlayer = ({
   const createPlayer = async (data: ICreatePlayerDTO) => {
     const nicknameIsUsed = await playerRepository.findByNickname(data.nickname)
 
-    if (nicknameIsUsed) throw new Error('nickname already in use')
+    if (nicknameIsUsed) throw new AppError('nickname already in use')
 
     const player = await playerRepository.create({
       nickname: data.nickname,

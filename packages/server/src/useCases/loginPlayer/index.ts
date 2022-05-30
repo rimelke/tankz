@@ -1,3 +1,4 @@
+import AppError from '@errors/AppError'
 import HashProvider from '@providers/HashProvider'
 import TokenProvider from '@providers/TokenProvider'
 import PlayerRepository from '@repositories/PlayerRepository'
@@ -21,14 +22,14 @@ const makeLoginPlayer = ({
   const loginPlayer = async (data: ILoginPlayerDTO) => {
     const player = await playerRepository.findByNickname(data.nickname)
 
-    if (!player) throw new Error('player not found')
+    if (!player) throw new AppError('player not found')
 
     const passwordIsValid = await hashProvider.compare(
       data.password,
       player.password
     )
 
-    if (!passwordIsValid) throw new Error('password is invalid')
+    if (!passwordIsValid) throw new AppError('password is invalid')
 
     const token = await tokenProvider.generate(player.id)
 

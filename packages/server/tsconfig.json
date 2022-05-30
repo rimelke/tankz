@@ -9,7 +9,8 @@
       "@tests/*": ["./tests/*"],
       "@providers/*": ["./src/providers/*"],
       "@validation/*": ["./src/validation/*"],
-      "@main/*": ["./src/main/*"]
+      "@main/*": ["./src/main/*"],
+      "@errors/*": ["./src/errors/*"]
     }
   }
 }

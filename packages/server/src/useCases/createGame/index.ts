@@ -1,3 +1,4 @@
+import AppError from '@errors/AppError'
 import GameRepository from '@repositories/GameRepository'
 import PlayerRepository from '@repositories/PlayerRepository'
 import * as maps from '@tankz/game/maps'
@@ -19,7 +20,7 @@ const makeCreateGame = ({
   const createGame = async (data: ICreateGameDTO) => {
     const player = await playerRepository.findById(data.playerId)
 
-    if (!player) throw new Error('player not found')
+    if (!player) throw new AppError('player not found')
 
     const game = await gameRepository.create({
       map: data.map,

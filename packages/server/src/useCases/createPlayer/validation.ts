@@ -1,5 +1,5 @@
 import { ICreatePlayerDTO } from '@useCases/createPlayer'
-import makeValidator from '..'
+import makeValidator from '@validation/index'
 
 const makeCreatePlayerValidator = () =>
   makeValidator<ICreatePlayerDTO>({

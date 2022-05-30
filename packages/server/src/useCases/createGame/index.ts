@@ -1,8 +1,10 @@
-import GameRepository from '../repositories/GameRepository'
+import GameRepository from '@repositories/GameRepository'
+import PlayerRepository from '@repositories/PlayerRepository'
 import * as maps from '@tankz/game/maps'
 
 interface IMakeCreateGameProps {
   gameRepository: GameRepository
+  playerRepository: PlayerRepository
 }
 
 export interface ICreateGameDTO {
@@ -10,11 +12,18 @@ export interface ICreateGameDTO {
   playerId: string
 }
 
-const makeCreateGame = ({ gameRepository }: IMakeCreateGameProps) => {
+const makeCreateGame = ({
+  gameRepository,
+  playerRepository
+}: IMakeCreateGameProps) => {
   const createGame = async (data: ICreateGameDTO) => {
+    const player = await playerRepository.findById(data.playerId)
+
+    if (!player) throw new Error('player not found')
+
     const game = await gameRepository.create({
       map: data.map,
-      players: []
+      players: [player]
     })
 
     return game

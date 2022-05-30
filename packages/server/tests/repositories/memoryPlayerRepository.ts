@@ -18,6 +18,9 @@ const makeMemoryPlayerRepository = () => {
     },
     async findByNickname(nickname) {
       return players.find((player) => player.nickname === nickname)
+    },
+    async findById(id) {
+      return players.find((player) => player.id === id)
     }
   }
 

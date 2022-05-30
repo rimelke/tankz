@@ -34,6 +34,17 @@ describe('createPlayer', () => {
     })
   })
 
+  it('should not create player with a nickname already in use', async () => {
+    const nickname = 'nickname'
+    const password = 'password'
+
+    await createPlayer({ nickname, password })
+
+    expect(createPlayer({ nickname, password })).rejects.toThrow(
+      'nickname already in use'
+    )
+  })
+
   it('should create a player', async () => {
     const data: ICreatePlayerDTO = {
       nickname: 'testnickname',

@@ -16,6 +16,10 @@ const makeCreatePlayer = ({
   hashProvider
 }: IMakeCreatePlayerProps) => {
   const createPlayer = async (data: ICreatePlayerDTO) => {
+    const nicknameIsUsed = await playerRepository.findByNickname(data.nickname)
+
+    if (nicknameIsUsed) throw new Error('nickname already in use')
+
     const player = await playerRepository.create({
       nickname: data.nickname,
       password: await hashProvider.hash(data.password)

@@ -7,6 +7,7 @@ interface GameProvider {
   create(map: keyof typeof maps): Game
   getRunningGames(): Game[]
   addPlayer(gameId: string, player: Player): ITank
+  removePlayer(playerId: string): void
 }
 
 export default GameProvider

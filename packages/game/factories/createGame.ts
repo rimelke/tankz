@@ -58,6 +58,7 @@ export interface IGame {
   state: IState
 
   addTank: (id: string) => ITank
+  removeTank: (id: string) => void
   endGame: () => void
 }
 
@@ -187,11 +188,15 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     return tank
   }
 
+  const removeTank = (id: string) => {
+    state.tanks = state.tanks.filter((tank) => tank.id !== id)
+  }
+
   const endGame = () => {
     clearInterval(interval)
   }
 
-  return { state, addTank, endGame }
+  return { state, addTank, endGame, removeTank }
 }
 
 export default createGame

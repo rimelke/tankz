@@ -3,6 +3,7 @@ import http from 'http'
 import { Server } from 'socket.io'
 import makeAdaptor from './adaptor'
 import joinGameListener from './listeners/joinGame'
+import leavePlayerListener from './listeners/leavePlayer'
 
 interface IMakeSocketServerProps {
   server: http.Server
@@ -31,7 +32,8 @@ const makeSocketServer = ({ server }: IMakeSocketServerProps) => {
     console.log(`[Socket.io] Client connected: ${socket.id}`)
 
     makeAdaptor(socket, {
-      joinGame: joinGameListener
+      joinGame: joinGameListener,
+      disconnect: leavePlayerListener
     })
   })
 }

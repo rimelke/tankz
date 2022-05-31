@@ -2,6 +2,7 @@ import AppError from '@errors/AppError'
 import GameRepository from '@repositories/GameRepository'
 import PlayerRepository from '@repositories/PlayerRepository'
 import * as maps from '@tankz/game/maps'
+import makeCreateGameValidator from './validation'
 
 interface IMakeCreateGameProps {
   gameRepository: GameRepository
@@ -30,7 +31,15 @@ const makeCreateGame = ({
     return game
   }
 
-  return createGame
+  const createGameValidator = makeCreateGameValidator()
+
+  const createGameController = async (data: ICreateGameDTO) => {
+    const validatedData = createGameValidator.validate(data)
+
+    return createGame(validatedData)
+  }
+
+  return createGameController
 }
 
 export default makeCreateGame

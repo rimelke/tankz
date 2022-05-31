@@ -1,7 +1,7 @@
 import { Player } from '@entities/player'
 import mongodb from '@infra/mongodb'
 import PlayerRepository from '@repositories/PlayerRepository'
-import { Document, Filter } from 'mongodb'
+import { Document, Filter, ObjectId } from 'mongodb'
 
 const makeMongoPlayerRepository = (): PlayerRepository => {
   const playerCollection = mongodb.getCollection('players')
@@ -26,7 +26,7 @@ const makeMongoPlayerRepository = (): PlayerRepository => {
       return findPlayer({ nickname })
     },
     findById(id) {
-      return findPlayer({ _id: id })
+      return findPlayer({ _id: new ObjectId(id) })
     }
   }
 

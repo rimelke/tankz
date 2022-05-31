@@ -58,6 +58,7 @@ export interface IGame {
   state: IState
 
   addTank: () => ITank
+  endGame: () => void
 }
 
 interface ICreateGameProps {
@@ -150,7 +151,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     bullets: []
   }
 
-  setInterval(() => {
+  const interval = setInterval(() => {
     state.tanks.forEach((tank) => tank.runActions())
     state.bullets.forEach((bullet) => bullet.moveBullet())
   }, 10)
@@ -182,7 +183,11 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     return tank
   }
 
-  return { state, addTank }
+  const endGame = () => {
+    clearInterval(interval)
+  }
+
+  return { state, addTank, endGame }
 }
 
 export default createGame

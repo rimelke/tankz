@@ -13,10 +13,13 @@ const makeMemoryGameProvider = (): GameProvider => {
 
   const setDestroyTimeout = (id: string) => {
     setTimeout(() => {
-      games.splice(
-        games.findIndex((game) => game.id === id),
-        1
-      )
+      const index = games.findIndex((game) => game.id === id)
+
+      if (index === -1) return
+
+      games[index].instance.endGame()
+
+      games.splice(index, 1)
     }, 10 * 1000)
   }
 

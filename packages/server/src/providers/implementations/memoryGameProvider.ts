@@ -1,4 +1,5 @@
 import { Game } from '@entities/game'
+import AppError from '@errors/AppError'
 import GameProvider from '@providers/GameProvider'
 import createGame, { IGame } from '@tankz/game'
 import * as maps from '@tankz/game/maps'
@@ -15,7 +16,7 @@ const makeMemoryGameProvider = (): GameProvider => {
     setTimeout(() => {
       const index = games.findIndex((game) => game.id === id)
 
-      if (index === -1) return
+      if (index === -1 || games[index].players.length > 0) return
 
       games[index].instance.endGame()
 
@@ -37,7 +38,20 @@ const makeMemoryGameProvider = (): GameProvider => {
 
       return game
     },
-    getRunningGames: () => games.map(({ instance, ...game }) => game)
+    getRunningGames: () => games.map(({ instance, ...game }) => game),
+    addPlayer: (gameId, player) => {
+      const game = games.find((game) => game.id === gameId)
+
+      if (!game) throw new AppError('game not found')
+
+      if (game.players.find((gamePlayer) => gamePlayer.id === player.id))
+        throw new AppError('player already in game')
+
+      const tank = game.instance.addTank(player.id)
+      game.players.push(player)
+
+      return tank
+    }
   }
 
   return memoryGameProvider

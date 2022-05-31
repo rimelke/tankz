@@ -204,14 +204,17 @@ export interface ITank {
   makeSingleAction(action: ISingleAction): void
 
   state: IState
+  id: string
 }
 
 interface ICreateTankProps {
+  id: string
   addBullet: (position: IPosition) => void
   defaultPosition: IPosition
 }
 
 const createTank = ({
+  id,
   addBullet,
   defaultPosition
 }: ICreateTankProps): ITank => {
@@ -304,6 +307,7 @@ const createTank = ({
   }
 
   return {
+    id,
     runActions,
     startAction,
     stopAction,

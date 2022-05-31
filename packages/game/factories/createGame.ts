@@ -57,7 +57,7 @@ interface IState {
 export interface IGame {
   state: IState
 
-  addTank: () => ITank
+  addTank: (id: string) => ITank
   endGame: () => void
 }
 
@@ -175,8 +175,12 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     return { x, y, direction }
   }
 
-  const addTank = () => {
-    const tank = createTank({ addBullet, defaultPosition: getRandomPosition() })
+  const addTank = (id: string) => {
+    const tank = createTank({
+      addBullet,
+      defaultPosition: getRandomPosition(),
+      id
+    })
 
     state.tanks.push(tank)
 

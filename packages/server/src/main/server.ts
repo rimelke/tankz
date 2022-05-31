@@ -3,8 +3,9 @@ import AppError from '@errors/AppError'
 import mongodb from '@infra/mongodb'
 import { ApolloServer, UserInputError } from 'apollo-server'
 import { schema } from './graphql'
+import makeSocketServer from '@main/socket'
 
-const server = new ApolloServer({
+const apolloServer = new ApolloServer({
   schema,
   csrfPrevention: true,
   formatError: (err) => {
@@ -23,7 +24,9 @@ const server = new ApolloServer({
 const main = async () => {
   await mongodb.connect()
 
-  const { url } = await server.listen()
+  const { server, url } = await apolloServer.listen()
+
+  makeSocketServer({ server })
 
   console.log(`[Apollo] Server ready at ${url}`)
 }

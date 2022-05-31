@@ -1,13 +1,10 @@
-import makeMongoGameRepository from '@repositories/implementations/mongoGameRepository'
-import makeMongoPlayerRepository from '@repositories/implementations/mongoPlayerRepository'
+import makeMemoryGameProvider from '@providers/implementations/memoryGameProvider'
 import makeCreateGame from '@useCases/createGame'
 
-const mongoPlayerRepository = makeMongoPlayerRepository()
-const mongoGameRepository = makeMongoGameRepository()
+const memoryGameProvider = makeMemoryGameProvider()
 
 const createGame = makeCreateGame({
-  playerRepository: mongoPlayerRepository,
-  gameRepository: mongoGameRepository
+  gameProvider: memoryGameProvider
 })
 
 export { createGame }

@@ -1,32 +1,18 @@
-import AppError from '@errors/AppError'
-import GameRepository from '@repositories/GameRepository'
-import PlayerRepository from '@repositories/PlayerRepository'
+import GameProvider from '@providers/GameProvider'
 import * as maps from '@tankz/game/maps'
 import makeCreateGameValidator from './validation'
 
 interface IMakeCreateGameProps {
-  gameRepository: GameRepository
-  playerRepository: PlayerRepository
+  gameProvider: GameProvider
 }
 
 export interface ICreateGameDTO {
   map: keyof typeof maps
-  playerId: string
 }
 
-const makeCreateGame = ({
-  gameRepository,
-  playerRepository
-}: IMakeCreateGameProps) => {
+const makeCreateGame = ({ gameProvider }: IMakeCreateGameProps) => {
   const createGame = async (data: ICreateGameDTO) => {
-    const player = await playerRepository.findById(data.playerId)
-
-    if (!player) throw new AppError('player not found')
-
-    const game = await gameRepository.create({
-      map: data.map,
-      players: [player]
-    })
+    const game = gameProvider.create(data.map)
 
     return game
   }

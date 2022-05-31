@@ -12,8 +12,7 @@
 // import { ILine } from '../utils/getLinesIntersection'
 // import getTankPoints, { getRawTankPoints } from '../utils/getTankPoints'
 
-import { MAP_SIZE } from '../constants'
-import { IPosition } from '../types'
+import { IMap, IPosition } from '../types'
 import createBullet, { IBullet } from './createBullet'
 import createTank, { ITank } from './createTank'
 
@@ -55,22 +54,17 @@ interface IState {
 //   endGame(): void
 // }
 
-interface IGame {
+export interface IGame {
   state: IState
 
   addTank: () => ITank
 }
 
 interface ICreateGameProps {
-  mapSize?: {
-    width: number
-    height: number
-  }
+  map: IMap
 }
 
-const createGame = ({
-  mapSize = { height: MAP_SIZE.height, width: MAP_SIZE.width }
-}: ICreateGameProps): IGame => {
+const createGame = ({ map }: ICreateGameProps): IGame => {
   // const tanks: ITank[] = []
   // const bullets: IBullet[] = []
   // const map: IMapObject[] = Array.from(map1).map((obj) => ({
@@ -170,8 +164,8 @@ const createGame = ({
   }
 
   const getRandomPosition = () => {
-    const x = Math.random() * mapSize.width
-    const y = Math.random() * mapSize.height
+    const x = Math.random() * map.width
+    const y = Math.random() * map.height
     const direction = Math.random() * 360
 
     // if (checkTankCollision(id, getTankPoints(x, y, direction)))

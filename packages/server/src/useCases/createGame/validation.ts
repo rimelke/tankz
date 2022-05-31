@@ -11,8 +11,7 @@ const makeCreateGameValidator = () =>
         type: 'isIn',
         value: Object.keys(maps)
       }
-    ],
-    playerId: ['isRequired', 'isString']
+    ]
   })
 
 export default makeCreateGameValidator

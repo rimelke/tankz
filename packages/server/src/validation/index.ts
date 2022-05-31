@@ -12,8 +12,14 @@ type ISchema =
 const makeValidator = <T>(schema: Record<keyof T, ISchema[]>) => {
   const validate = (data: T) => {
     Object.keys(schema).forEach((key) => {
-      schema[key].forEach((validatorName: keyof typeof validators) => {
-        data[key] = validators[validatorName](key, data[key])
+      schema[key].forEach((validatorName: ISchema) => {
+        data[key] = validators[
+          typeof validatorName === 'string' ? validatorName : validatorName.type
+        ](
+          key,
+          data[key],
+          typeof validatorName === 'string' ? undefined : validatorName.value
+        )
       })
     })
 

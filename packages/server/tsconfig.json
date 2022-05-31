@@ -10,7 +10,8 @@
       "@providers/*": ["./src/providers/*"],
       "@validation/*": ["./src/validation/*"],
       "@main/*": ["./src/main/*"],
-      "@errors/*": ["./src/errors/*"]
+      "@errors/*": ["./src/errors/*"],
+      "@infra/*": ["./src/infra/*"]
     }
   }
 }

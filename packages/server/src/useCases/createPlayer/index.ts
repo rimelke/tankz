@@ -1,6 +1,7 @@
 import PlayerRepository from '@repositories/PlayerRepository'
 import HashProvider from '@providers/HashProvider'
 import AppError from '@errors/AppError'
+import makeCreatePlayerValidator from './validation'
 
 interface IMakeCreatePlayerProps {
   playerRepository: PlayerRepository
@@ -29,7 +30,15 @@ const makeCreatePlayer = ({
     return player
   }
 
-  return createPlayer
+  const createPlayerController = async (data: ICreatePlayerDTO) => {
+    const createPlayerValidator = makeCreatePlayerValidator()
+
+    const validatedData = createPlayerValidator.validate(data)
+
+    return createPlayer(validatedData)
+  }
+
+  return createPlayerController
 }
 
 export default makeCreatePlayer

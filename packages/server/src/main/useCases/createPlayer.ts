@@ -1,14 +1,14 @@
 import makeBcryptHashProvider from '@providers/implementations/bcryptHashProvider'
-import makeMemoryPlayerRepository from '@tests/repositories/memoryPlayerRepository'
+import makeMongoPlayerRepository from '@repositories/implementations/mongoPlayerRepository'
 import makeCreatePlayer from '@useCases/createPlayer'
 
 const bcryptHashProvider = makeBcryptHashProvider()
 
-const memoryPlayerRepository = makeMemoryPlayerRepository()
+const mongoPlayerRepository = makeMongoPlayerRepository()
 
 const createPlayer = makeCreatePlayer({
   hashProvider: bcryptHashProvider,
-  playerRepository: memoryPlayerRepository
+  playerRepository: mongoPlayerRepository
 })
 
 export { createPlayer }

@@ -3,7 +3,16 @@ import makeValidator from '@validation/index'
 
 const makeCreatePlayerValidator = () =>
   makeValidator<ICreatePlayerDTO>({
-    nickname: ['isRequired', 'isString', { type: 'isMin', value: 5 }],
+    nickname: [
+      'isRequired',
+      'isString',
+      'trim',
+      { type: 'isMin', value: 5 },
+      {
+        type: 'regex',
+        value: /^\S+$/
+      }
+    ],
     password: ['isRequired', 'isString', { type: 'isMin', value: 8 }]
   })
 

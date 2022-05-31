@@ -13,12 +13,17 @@ describe('createPlayer', () => {
 
     it('should contain nickname schema', () => {
       expect(createPlayerValidator.schema.nickname).toBeDefined()
-      expect(createPlayerValidator.schema.nickname.length).toBe(3)
+      expect(createPlayerValidator.schema.nickname.length).toBe(5)
       expect(createPlayerValidator.schema.nickname[0]).toBe('isRequired')
       expect(createPlayerValidator.schema.nickname[1]).toBe('isString')
-      expect(createPlayerValidator.schema.nickname[2]).toEqual({
+      expect(createPlayerValidator.schema.nickname[2]).toBe('trim')
+      expect(createPlayerValidator.schema.nickname[3]).toEqual({
         type: 'isMin',
         value: 5
+      })
+      expect(createPlayerValidator.schema.nickname[4]).toEqual({
+        type: 'regex',
+        value: /^\S+$/
       })
     })
 

@@ -7,6 +7,10 @@ export default gql`
     players: [Player!]!
   }
 
+  extend type Query {
+    getRunningGames: [Game!]!
+  }
+
   extend type Mutation {
     createGame(map: String!): Game! @auth
   }

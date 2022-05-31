@@ -33,7 +33,8 @@ const makeMemoryGameProvider = (): GameProvider => {
       setDestroyTimeout(game.id)
 
       return game
-    }
+    },
+    getRunningGames: () => games.map(({ instance, ...game }) => game)
   }
 
   return memoryGameProvider

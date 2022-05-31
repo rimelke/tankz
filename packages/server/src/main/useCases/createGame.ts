@@ -1,10 +1,8 @@
-import makeMemoryGameProvider from '@providers/implementations/memoryGameProvider'
 import makeCreateGame from '@useCases/createGame'
-
-const memoryGameProvider = makeMemoryGameProvider()
+import { gameProvider } from '@main/providers/gameProvider'
 
 const createGame = makeCreateGame({
-  gameProvider: memoryGameProvider
+  gameProvider
 })
 
 export { createGame }

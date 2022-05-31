@@ -2,7 +2,6 @@ import makeJwtTokenProvider from '@providers/implementations/jwtTokenProvider'
 import http from 'http'
 import { Server } from 'socket.io'
 import makeAdaptor from './adaptor'
-import createGameListener from './listeners/createGame'
 
 interface IMakeSocketServerProps {
   server: http.Server
@@ -30,9 +29,7 @@ const makeSocketServer = ({ server }: IMakeSocketServerProps) => {
   io.on('connection', (socket) => {
     console.log(`[Socket.io] Client connected: ${socket.id}`)
 
-    makeAdaptor(socket, {
-      createGame: createGameListener
-    })
+    makeAdaptor(socket, {})
   })
 }
 

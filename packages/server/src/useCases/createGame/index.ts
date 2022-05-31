@@ -11,7 +11,7 @@ export interface ICreateGameDTO {
 }
 
 const makeCreateGame = ({ gameProvider }: IMakeCreateGameProps) => {
-  const createGame = async (data: ICreateGameDTO) => {
+  const createGame = (data: ICreateGameDTO) => {
     const game = gameProvider.create(data.map)
 
     return game
@@ -19,7 +19,7 @@ const makeCreateGame = ({ gameProvider }: IMakeCreateGameProps) => {
 
   const createGameValidator = makeCreateGameValidator()
 
-  const createGameController = async (data: ICreateGameDTO) => {
+  const createGameController = (data: ICreateGameDTO) => {
     const validatedData = createGameValidator.validate(data)
 
     return createGame(validatedData)

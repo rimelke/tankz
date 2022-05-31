@@ -8,6 +8,7 @@ import './styles/global.css'
 import Routes from './routes'
 import Logo from './components/Logo'
 import { Container, MainContent } from './styled'
+import { ApolloProvider, InMemoryCache, ApolloClient } from '@apollo/client'
 
 // const continuosKeys: Record<string, IContinuosAction> = {
 //   ArrowUp: 'MoveForward',
@@ -116,13 +117,24 @@ import { Container, MainContent } from './styled'
 //   )
 // }
 
+const client = new ApolloClient({
+  uri: 'http://localhost:4000/graphql',
+  cache: new InMemoryCache(),
+  headers: {
+    Authorization:
+      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyOTYyNTA3NzEwMDI4YzZkZmEzNWFmNiIsImlhdCI6MTY1NDAxMTEwMywiZXhwIjoxNjU0NjE1OTAzfQ.8U6TICBsm89-JlTjlCLviEWZu8muN_VQ290rK82x0q0'
+  }
+})
+
 const App = () => (
-  <Container>
-    <Logo />
-    <MainContent>
-      <Routes />
-    </MainContent>
-  </Container>
+  <ApolloProvider client={client}>
+    <Container>
+      <Logo />
+      <MainContent>
+        <Routes />
+      </MainContent>
+    </Container>
+  </ApolloProvider>
 )
 
 export default App

@@ -23,6 +23,7 @@ import {
 import createGame from '@tankz/game'
 import { TANK_SIZE } from '@tankz/game/constants'
 import * as tankTypes from '../../constants/tanks'
+import { map1 } from '@tankz/game/maps'
 
 // import { TANK_SIZE } from '@tankz/game/constants'
 // import tankTypes from '@tankz/game/tankTypes'
@@ -55,8 +56,8 @@ const Instructions = () => {
 
     if (!ctx) return
 
-    const game = createGame({})
-    const tank = game.addTank()
+    const game = createGame({ map: map1 })
+    const tank = game.addTank('tank1')
 
     let animationCode: number
 

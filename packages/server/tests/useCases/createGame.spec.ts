@@ -1,24 +1,11 @@
 import makeCreateGame from '@useCases/createGame'
-import makeMemoryGameRepository from '@tests/repositories/memoryGameRepository'
-import makeMemoryPlayerRepository from '@tests/repositories/memoryPlayerRepository'
 import makeCreateGameValidator from '@useCases/createGame/validation'
 import * as maps from '@tankz/game/maps'
-import { Player } from '@entities/player'
-import makeCreatePlayer from '@useCases/createPlayer'
-import makeBcryptHashProvider from '@providers/implementations/bcryptHashProvider'
+import makeMemoryGameProvider from '@providers/implementations/memoryGameProvider'
 
 describe('createGame', () => {
-  const gameRepository = makeMemoryGameRepository()
-  const playerRepository = makeMemoryPlayerRepository()
-  const createGame = makeCreateGame({ gameRepository, playerRepository })
-  let player: Player
-
-  beforeAll(async () => {
-    const hashProvider = makeBcryptHashProvider()
-    const createPlayer = makeCreatePlayer({ playerRepository, hashProvider })
-
-    player = await createPlayer({ nickname: 'player', password: 'abcd1234' })
-  })
+  const gameProvider = makeMemoryGameProvider()
+  const createGame = makeCreateGame({ gameProvider })
 
   describe('validation', () => {
     const validator = makeCreateGameValidator()
@@ -33,24 +20,15 @@ describe('createGame', () => {
         value: Object.keys(maps)
       })
     })
-
-    it('should contain playerId schema', () => {
-      expect(validator.schema.playerId).toBeDefined()
-      expect(validator.schema.playerId.length).toBe(2)
-      expect(validator.schema.playerId[0]).toBe('isRequired')
-      expect(validator.schema.playerId[1]).toBe('isString')
-    })
   })
 
   it('should create a game', async () => {
     const game = await createGame({
-      map: 'map1',
-      playerId: player.id
+      map: 'map1'
     })
 
     expect(game).toHaveProperty('id')
-    expect(game.players).toHaveLength(1)
-    expect(game.players.includes(player)).toBeTruthy()
+    expect(game.players).toHaveLength(0)
     expect(game.map).toBe('map1')
   })
 })

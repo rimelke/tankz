@@ -33,7 +33,7 @@ describe('loginPlayer', () => {
     })
   })
 
-  it('should create a player', async () => {
+  it('should login a player', async () => {
     const data: ILoginPlayerDTO = {
       nickname: 'testnickname',
       password: 'abcd1234'
@@ -49,6 +49,6 @@ describe('loginPlayer', () => {
     const result = await loginPlayer(data)
 
     expect(result.token).toBeDefined()
-    expect(await tokenProvider.validate(result.token)).toBe(id)
+    expect(await tokenProvider.validate(`Bearer ${result.token}`)).toBe(id)
   })
 })

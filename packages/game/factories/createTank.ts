@@ -9,7 +9,12 @@
 // import { ILine } from '../utils/getLinesIntersection'
 // import getTankPoints from '../utils/getTankPoints'
 
-import { STEP_MOVE, STEP_ROTATION, TANK_SIZE } from '../constants'
+import {
+  DEFAULT_HEALTH,
+  STEP_MOVE,
+  STEP_ROTATION,
+  TANK_SIZE
+} from '../constants'
 import { IPosition } from '../types'
 
 // export type IContinuosAction =
@@ -194,6 +199,7 @@ export type IAction = IContinuosAction | ISingleAction
 
 export interface IRawTankState {
   id: string
+  health: number
   state: {
     runningActions: IContinuosAction[]
     position: IPosition
@@ -201,6 +207,7 @@ export interface IRawTankState {
 }
 
 interface IState {
+  health: number
   runningActions: Set<IContinuosAction>
   position: IPosition
 }
@@ -230,6 +237,7 @@ const createTank = ({
   defaultActions = []
 }: ICreateTankProps): ITank => {
   const state: IState = {
+    health: DEFAULT_HEALTH,
     runningActions: new Set(defaultActions),
     position: defaultPosition
   }
@@ -319,6 +327,7 @@ const createTank = ({
 
   const getState = (): IRawTankState => ({
     id,
+    health: state.health,
     state: {
       runningActions: [...state.runningActions],
       position: state.position

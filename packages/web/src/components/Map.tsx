@@ -1,5 +1,5 @@
 import { IMap } from '@tankz/game/types'
-import { ForwardedRef, forwardRef, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import styled from 'styled-components'
 
 interface ICustomCanvasProps {
@@ -13,13 +13,23 @@ const CustomCanvas = styled.canvas<ICustomCanvasProps>`
 
 interface IMapProps {
   map: IMap
-  foreverRender?: boolean
+  singleRender?: boolean
+  drawFunction?: (ctx: CanvasRenderingContext2D) => void
 }
 
-const MapWithoutRef = (
-  { map, foreverRender }: IMapProps,
-  ref: ForwardedRef<HTMLCanvasElement>
-) => {
+const drawMap = (ctx: CanvasRenderingContext2D, map: IMap) => {
+  ctx.fillStyle = `rgba(0, 0, 0, 1)`
+
+  map.objects.forEach(({ x, y, width, height }) => {
+    ctx.fillRect(x, y, width, height)
+  })
+}
+
+const Map = ({
+  map,
+  singleRender,
+  drawFunction = (ctx) => drawMap(ctx, map)
+}: IMapProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -34,18 +44,14 @@ const MapWithoutRef = (
     const render = (ctx: CanvasRenderingContext2D, callback: Function) => {
       ctx.clearRect(0, 0, map.width, map.height)
 
-      ctx.fillStyle = `rgba(0, 0, 0, 1)`
-
-      map.objects.forEach(({ x, y, width, height }) => {
-        ctx.fillRect(x, y, width, height)
-      })
+      drawFunction(ctx)
 
       callback(ctx, callback)
     }
 
     render(
       ctx,
-      foreverRender
+      !singleRender
         ? (ctx, callback) => {
             animationCode = requestAnimationFrame(() => render(ctx, callback))
           }
@@ -62,14 +68,8 @@ const MapWithoutRef = (
       orientation={map.width >= map.height ? 'landscape' : 'portrait'}
       width={map.width}
       height={map.height}
-      ref={(node) => {
-        canvasRef.current = node
-        if (ref) typeof ref === 'function' ? ref(node) : (ref.current = node)
-      }}
+      ref={canvasRef}
     />
   )
 }
-
-const Map = forwardRef<HTMLCanvasElement, IMapProps>(MapWithoutRef)
-
 export default Map

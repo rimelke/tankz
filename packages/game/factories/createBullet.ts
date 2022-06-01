@@ -1,7 +1,8 @@
 import { STEP_BULLET } from '../constants'
-import { IPosition } from '../types'
+import { IPosition, ISimplePosition } from '../types'
 
 interface IProps {
+  checkCollision: (position: ISimplePosition) => boolean
   defaultPos: {
     x: number
     y: number
@@ -15,10 +16,10 @@ interface IState {
 
 export interface IBullet {
   state: IState
-  moveBullet: () => void
+  moveBullet: () => boolean
 }
 
-const createBullet = ({ defaultPos }: IProps): IBullet => {
+const createBullet = ({ defaultPos, checkCollision }: IProps): IBullet => {
   const state: IState = {
     position: {
       x: defaultPos.x,
@@ -27,7 +28,7 @@ const createBullet = ({ defaultPos }: IProps): IBullet => {
     }
   }
 
-  const moveBullet = () => {
+  const moveBullet = (): boolean => {
     const radiansAngle = (Math.PI * state.position.direction) / 180
 
     const rSin = Math.sin(radiansAngle)
@@ -36,8 +37,9 @@ const createBullet = ({ defaultPos }: IProps): IBullet => {
     const newX = state.position.x + STEP_BULLET * rSin
     const newY = state.position.y - STEP_BULLET * rCos
 
+    if (checkCollision({ x: newX, y: newY })) return false
+
     // if (
-    //   checkLimitsCollision([{ x: newX, y: newY }]) ||
     //   map.some(({ x, y, width, height }, mapIndex) => {
     //     const isCollised =
     //       newX > x && newX < x + width && newY > y && newY < y + height
@@ -80,6 +82,8 @@ const createBullet = ({ defaultPos }: IProps): IBullet => {
 
     state.position.x = newX
     state.position.y = newY
+
+    return true
   }
 
   return { moveBullet, state }

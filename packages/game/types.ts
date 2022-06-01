@@ -7,7 +7,7 @@ export interface IPosition extends ISimplePosition {
   direction: number
 }
 
-interface IMapObject {
+export interface IMapObject {
   x: number
   y: number
   width: number

@@ -12,9 +12,11 @@
 // import { ILine } from '../utils/getLinesIntersection'
 // import getTankPoints, { getRawTankPoints } from '../utils/getTankPoints'
 
-import { IMap, IPosition } from '../types'
+import { BULLET_POWER, DEFAULT_HEALTH } from '../constants'
+import { IMap, IPosition, ISimplePosition, IMapObject } from '../types'
 import createBullet, { IBullet } from './createBullet'
 import createTank, { ITank, IRawTankState } from './createTank'
+import makeCheckLimitsCollision from './makeCheckLimitsCollision'
 
 // export interface IPosition {
 //   x: number
@@ -37,9 +39,16 @@ import createTank, { ITank, IRawTankState } from './createTank'
 
 // type IStatus = 'waiting' | 'running' | 'ended'
 
+interface IGameObject extends IMapObject {
+  state: {
+    health: number
+  }
+}
+
 export interface IGameState {
   tanks: ITank[]
   bullets: IBullet[]
+  objects: IGameObject[]
 }
 
 // interface IGame {
@@ -56,6 +65,7 @@ export interface IGameState {
 
 interface IRawState {
   tanks: IRawTankState[]
+  objects: IGameObject[]
 }
 
 export interface IGame {
@@ -155,17 +165,48 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
 
   const state: IGameState = {
     tanks: [],
-    bullets: []
+    bullets: [],
+    objects: map.objects.map((obj) => ({
+      ...obj,
+      state: {
+        health: DEFAULT_HEALTH
+      }
+    }))
   }
 
   const interval = setInterval(() => {
     state.tanks.forEach((tank) => tank.runActions())
-    state.bullets.forEach((bullet) => bullet.moveBullet())
+    state.bullets.forEach(
+      (bullet, index) => !bullet.moveBullet() && state.bullets.splice(index, 1)
+    )
   }, 10)
+
+  const decreaseHealth = (type: 'tanks' | 'objects', index: number) => {
+    const entity = state[type][index]
+
+    entity.state.health -= BULLET_POWER
+
+    if (entity.state.health <= 0) state[type].splice(index, 1)
+
+    return true
+  }
+
+  const checkLimitsCollision = makeCheckLimitsCollision(map.width, map.height)
+  const bulletCheckCollision = (position: ISimplePosition) =>
+    checkLimitsCollision([position]) ||
+    state.objects.some(
+      (obj, index) =>
+        position.x > obj.x &&
+        position.x < obj.x + obj.width &&
+        position.y > obj.y &&
+        position.y < obj.y + obj.height &&
+        decreaseHealth('objects', index)
+    )
 
   const addBullet = (position: IPosition) => {
     const bullet = createBullet({
-      defaultPos: position
+      defaultPos: position,
+      checkCollision: bulletCheckCollision
     })
 
     state.bullets.push(bullet)
@@ -199,7 +240,8 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
   }
 
   const getState = (): IRawState => ({
-    tanks: state.tanks.map((tank) => tank.getState())
+    tanks: state.tanks.map((tank) => tank.getState()),
+    objects: state.objects
   })
 
   const setState = (newState: { tanks: IRawTankState[] }) => {

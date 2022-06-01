@@ -10,7 +10,9 @@ interface IMakeSocketServerProps {
 }
 
 const makeSocketServer = ({ server }: IMakeSocketServerProps) => {
-  const io = new Server(server)
+  const io = new Server(server, {
+    cors: {}
+  })
 
   const tokenProvider = makeJwtTokenProvider()
 

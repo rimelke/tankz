@@ -1,13 +1,8 @@
-import { Game } from '@entities/game'
 import AppError from '@errors/AppError'
-import GameProvider from '@providers/GameProvider'
-import createGame, { IGame } from '@tankz/game'
+import GameProvider, { RunningGame } from '@providers/GameProvider'
+import createGame from '@tankz/game'
 import * as maps from '@tankz/game/maps'
 import { nanoid } from 'nanoid'
-
-interface RunningGame extends Game {
-  instance: IGame
-}
 
 const makeMemoryGameProvider = (): GameProvider => {
   const games: RunningGame[] = []
@@ -30,25 +25,24 @@ const makeMemoryGameProvider = (): GameProvider => {
 
   const memoryGameProvider: GameProvider = {
     create: (map) => {
-      const game: Game = {
+      const game: RunningGame = {
         id: nanoid(),
         map,
-        players: []
+        players: [],
+        instance: createGame({ map: maps[map] })
       }
 
-      games.push({ ...game, instance: createGame({ map: maps[map] }) })
+      games.push(game)
 
       setDestroyTimeout(game.id)
 
       return game
     },
-    getRunningGames: () => games.map(({ instance, ...game }) => game),
+    getRunningGames: () => games,
     addPlayer: (gameId, player) => {
       const game = games.find((game) => game.id === gameId)
 
       if (!game) throw new AppError('game not found')
-
-      console.log('playerIds', playerIds)
 
       if (playerIds[player.id]) throw new AppError('player already in game')
 
@@ -72,6 +66,13 @@ const makeMemoryGameProvider = (): GameProvider => {
       )
 
       if (game.players.length === 0) destroyGame(game)
+    },
+    getGame: (gameId) => {
+      const game = games.find((game) => game.id === gameId)
+
+      if (!game) throw new AppError('game not found')
+
+      return game
     }
   }
 

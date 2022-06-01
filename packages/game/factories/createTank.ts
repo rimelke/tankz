@@ -192,6 +192,14 @@ export type IContinuosAction =
 export type ISingleAction = 'Fire'
 export type IAction = IContinuosAction | ISingleAction
 
+export interface IRawTankState {
+  id: string
+  state: {
+    runningActions: IContinuosAction[]
+    position: IPosition
+  }
+}
+
 interface IState {
   runningActions: Set<IContinuosAction>
   position: IPosition
@@ -202,6 +210,7 @@ export interface ITank {
   startAction(action: IContinuosAction): void
   stopAction(action: IContinuosAction): void
   makeSingleAction(action: ISingleAction): void
+  getState(): IRawTankState
 
   state: IState
   id: string
@@ -211,15 +220,17 @@ interface ICreateTankProps {
   id: string
   addBullet: (position: IPosition) => void
   defaultPosition: IPosition
+  defaultActions?: IContinuosAction[]
 }
 
 const createTank = ({
   id,
   addBullet,
-  defaultPosition
+  defaultPosition,
+  defaultActions = []
 }: ICreateTankProps): ITank => {
   const state: IState = {
-    runningActions: new Set(),
+    runningActions: new Set(defaultActions),
     position: defaultPosition
   }
 
@@ -306,13 +317,22 @@ const createTank = ({
     state.runningActions.forEach((action) => possibleActions[action]())
   }
 
+  const getState = (): IRawTankState => ({
+    id,
+    state: {
+      runningActions: [...state.runningActions],
+      position: state.position
+    }
+  })
+
   return {
     id,
     runActions,
     startAction,
     stopAction,
     makeSingleAction,
-    state
+    state,
+    getState
   }
 }
 

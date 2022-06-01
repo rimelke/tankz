@@ -26,8 +26,9 @@ const makeJoinPlayerInGame = ({
     if (!player) throw new AppError('player not found')
 
     const tank = gameProvider.addPlayer(gameId, player)
+    const game = gameProvider.getGame(gameId)
 
-    return { tank, player }
+    return { tank, player, game }
   }
 
   const validator = makeJoinPlayerInGameValidator()

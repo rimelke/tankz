@@ -14,7 +14,7 @@
 
 import { IMap, IPosition } from '../types'
 import createBullet, { IBullet } from './createBullet'
-import createTank, { ITank } from './createTank'
+import createTank, { ITank, IRawTankState } from './createTank'
 
 // export interface IPosition {
 //   x: number
@@ -37,7 +37,7 @@ import createTank, { ITank } from './createTank'
 
 // type IStatus = 'waiting' | 'running' | 'ended'
 
-interface IState {
+export interface IGameState {
   tanks: ITank[]
   bullets: IBullet[]
 }
@@ -54,11 +54,17 @@ interface IState {
 //   endGame(): void
 // }
 
+interface IRawState {
+  tanks: IRawTankState[]
+}
+
 export interface IGame {
-  state: IState
+  state: IGameState
 
   addTank: (id: string) => ITank
   removeTank: (id: string) => void
+  getState: () => IRawState
+  setState: (state: IRawState) => void
   endGame: () => void
 }
 
@@ -147,7 +153,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
   //   addTank
   // }
 
-  const state: IState = {
+  const state: IGameState = {
     tanks: [],
     bullets: []
   }
@@ -192,11 +198,26 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     state.tanks = state.tanks.filter((tank) => tank.id !== id)
   }
 
+  const getState = (): IRawState => ({
+    tanks: state.tanks.map((tank) => tank.getState())
+  })
+
+  const setState = (newState: { tanks: IRawTankState[] }) => {
+    state.tanks = newState.tanks.map((tank) =>
+      createTank({
+        addBullet,
+        defaultPosition: tank.state.position,
+        defaultActions: tank.state.runningActions,
+        id: tank.id
+      })
+    )
+  }
+
   const endGame = () => {
     clearInterval(interval)
   }
 
-  return { state, addTank, endGame, removeTank }
+  return { state, addTank, endGame, removeTank, setState, getState }
 }
 
 export default createGame

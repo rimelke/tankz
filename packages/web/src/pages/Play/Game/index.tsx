@@ -5,6 +5,7 @@ import { io } from 'socket.io-client'
 import Map from '../../../components/Map'
 import * as maps from '@tankz/game/maps'
 import Loading from '../../../components/Loading'
+import Error from '../../../components/Error'
 import { Container, MapContainer } from './styled'
 import { TANK_SIZE } from '@tankz/game/constants'
 import * as tanksTypes from '../../../constants/tanks'
@@ -40,6 +41,7 @@ const PlayGame = () => {
   const tankRef = useRef<ITank>()
 
   const [gameData, setGameData] = useState<IGameData | null>(null)
+  const [error, setError] = useState()
 
   useEffect(() => {
     if (!gameData) return
@@ -74,6 +76,8 @@ const PlayGame = () => {
 
     socket.on('error', (err) => {
       console.error(err)
+      socket.disconnect()
+      setError(err.message)
     })
 
     socket.on('setup', (data) => {
@@ -134,6 +138,7 @@ const PlayGame = () => {
     })
   }
 
+  if (error) return <Error>{error}</Error>
   if (!gameData) return <Loading />
 
   return (

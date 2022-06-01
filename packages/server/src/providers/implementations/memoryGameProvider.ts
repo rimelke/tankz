@@ -64,6 +64,7 @@ const makeMemoryGameProvider = (): GameProvider => {
         game.players.findIndex((player) => player.id === playerId),
         1
       )
+      playerIds[playerId] = undefined
 
       if (game.players.length === 0) destroyGame(game)
     },

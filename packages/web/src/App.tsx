@@ -8,15 +8,29 @@ import './styles/global.css'
 import Routes from './routes'
 import Logo from './components/Logo'
 import { Container, MainContent } from './styled'
-import { ApolloProvider, InMemoryCache, ApolloClient } from '@apollo/client'
+import {
+  ApolloProvider,
+  InMemoryCache,
+  ApolloClient,
+  createHttpLink
+} from '@apollo/client'
+import { AuthProvider, getAuthorization } from './contexts/AuthContext'
+import { setContext } from '@apollo/client/link/context'
+
+const httpLink = createHttpLink({
+  uri: 'http://localhost:4000/graphql'
+})
+
+const authLink = setContext((_, { headers }) => ({
+  headers: {
+    ...headers,
+    authorization: getAuthorization()
+  }
+}))
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql',
   cache: new InMemoryCache(),
-  headers: {
-    Authorization:
-      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyOTYyNTA3NzEwMDI4YzZkZmEzNWFmNiIsImlhdCI6MTY1NDAxMTEwMywiZXhwIjoxNjU0NjE1OTAzfQ.8U6TICBsm89-JlTjlCLviEWZu8muN_VQ290rK82x0q0'
-  }
+  link: authLink.concat(httpLink)
 })
 
 const App = () => (
@@ -24,7 +38,9 @@ const App = () => (
     <Container>
       <Logo />
       <MainContent>
-        <Routes />
+        <AuthProvider>
+          <Routes />
+        </AuthProvider>
       </MainContent>
     </Container>
   </ApolloProvider>

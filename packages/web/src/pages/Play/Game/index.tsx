@@ -14,6 +14,7 @@ import {
   ISingleAction,
   ITank
 } from '@tankz/game/factories/createTank'
+import { getAuthorization } from '../../../contexts/AuthContext'
 
 interface IGameData {
   map: keyof typeof maps
@@ -69,8 +70,7 @@ const PlayGame = () => {
 
     const socket = io('ws://localhost:4000', {
       auth: {
-        authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyOTYyNTA3NzEwMDI4YzZkZmEzNWFmNiIsImlhdCI6MTY1NDAxMTEwMywiZXhwIjoxNjU0NjE1OTAzfQ.8U6TICBsm89-JlTjlCLviEWZu8muN_VQ290rK82x0q0'
+        authorization: getAuthorization()
       }
     })
 

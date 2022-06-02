@@ -15,6 +15,7 @@ import {
   ITank
 } from '@tankz/game/factories/createTank'
 import { getAuthorization } from '../../../contexts/AuthContext'
+import Back from '../../../components/Back'
 
 interface IGameData {
   map: keyof typeof maps
@@ -92,6 +93,10 @@ const PlayGame = () => {
     })
 
     socket.emit('joinGame', id)
+
+    return () => {
+      socket.disconnect()
+    }
   }, [])
 
   const drawGame = (ctx: CanvasRenderingContext2D) => {
@@ -143,6 +148,7 @@ const PlayGame = () => {
 
   return (
     <Container>
+      <Back />
       <MapContainer>
         <Map drawFunction={drawGame} map={maps[gameData.map]} />
       </MapContainer>

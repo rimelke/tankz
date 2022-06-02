@@ -2,6 +2,10 @@ import styled from 'styled-components'
 
 export const Container = styled.div`
   margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
 `
 
 export const MapContainer = styled.div`

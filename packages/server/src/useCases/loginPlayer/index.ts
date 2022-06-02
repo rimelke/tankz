@@ -34,7 +34,11 @@ const makeLoginPlayer = ({
     const token = await tokenProvider.generate(player.id)
 
     return {
-      token
+      token,
+      player: {
+        id: player.id,
+        nickname: player.nickname
+      }
     }
   }
 

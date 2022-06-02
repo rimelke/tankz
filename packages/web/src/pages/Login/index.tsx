@@ -18,7 +18,7 @@ import Loading from '../../components/Loading'
 import { useAuth } from '../../contexts/AuthContext'
 
 const Login = () => {
-  const { setToken } = useAuth()
+  const { setAuthData } = useAuth()
 
   const signupFormRef = useRef<FormHandles>(null)
   const [createPlayer, { loading, error, data, reset }] =
@@ -89,7 +89,8 @@ const Login = () => {
         password: validatedData.password
       }
     }).then(({ data }) => {
-      if (data) setToken(data.loginPlayer.token)
+      if (data)
+        setAuthData(data.loginPlayer.token, data.loginPlayer.player.nickname)
     })
   }
 

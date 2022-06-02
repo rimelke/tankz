@@ -4,6 +4,9 @@ export const LOGIN_PLAYER = gql`
   mutation LoginPlayer($nickname: String!, $password: String!) {
     loginPlayer(nickname: $nickname, password: $password) {
       token
+      player {
+        nickname
+      }
     }
   }
 `

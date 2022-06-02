@@ -8,6 +8,7 @@ export default gql`
 
   type LoginReturn {
     token: String!
+    player: Player!
   }
 
   extend type Mutation {

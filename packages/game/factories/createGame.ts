@@ -44,6 +44,7 @@ export interface IGame {
   getState: () => IRawState
   setState: (state: IRawState) => void
   endGame: () => void
+  startGame: () => void
 
   subscribe: (observer: IObserver) => void
   unsubscribe: (observer: IObserver) => void
@@ -54,11 +55,8 @@ interface ICreateGameProps {
 }
 
 const createGame = ({ map }: ICreateGameProps): IGame => {
-  const state: IGameState = {
-    status: 'waiting',
-    tanks: [],
-    bullets: [],
-    objects: map.objects.map((obj) => ({
+  const getObjects = (): IGameObject[] =>
+    map.objects.map((obj) => ({
       ...obj,
       state: {
         health: DEFAULT_HEALTH
@@ -82,6 +80,12 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
         }
       ]
     }))
+
+  const state: IGameState = {
+    status: 'waiting',
+    tanks: [],
+    bullets: [],
+    objects: getObjects()
   }
 
   const observers: IObserver[] = []
@@ -114,7 +118,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
       type: 'stateChanged',
       payload: getState()
     })
-  }, 2500)
+  }, 500)
 
   const decreaseHealth = (type: 'tanks' | 'objects', index: number) => {
     const entity = state[type][index]
@@ -258,20 +262,43 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     tank.unsubscribe(getTankNotifier(id))
   }
 
-  const setState = (newState: { tanks: ITank[] }) => {
-    state.tanks = newState.tanks.map((tank) =>
-      createTank({
-        addBullet,
-        defaultPosition: tank.state.position,
-        id: tank.id,
-        checkCollision: tankCheckCollision
-      })
+  const setState = (newState: IRawState) => {
+    state.objects = newState.objects
+    state.tanks.forEach((tank) =>
+      tank.setState(
+        newState.tanks.find((t) => t.id === tank.id)?.state || tank.state
+      )
     )
   }
 
   const endGame = () => {
     clearInterval(interval)
     clearInterval(stateInterval)
+  }
+
+  const startGame = () => {
+    const COUNTDOWN = 10 * 1000
+
+    notifyAll({
+      type: 'startCountdown',
+      payload: COUNTDOWN
+    })
+
+    setTimeout(() => {
+      state.status = 'playing'
+
+      state.bullets = []
+      state.objects = getObjects()
+      state.tanks.forEach((tank) => {
+        tank.state.position = getRandomPosition()
+        tank.state.health = DEFAULT_HEALTH
+      })
+
+      notifyAll({
+        type: 'startGame',
+        payload: getState()
+      })
+    }, COUNTDOWN)
   }
 
   return {
@@ -283,7 +310,8 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     getState,
     subscribe,
     unsubscribe,
-    addBullet
+    addBullet,
+    startGame
   }
 }
 

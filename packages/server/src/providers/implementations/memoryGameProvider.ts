@@ -23,6 +23,22 @@ const makeMemoryGameProvider = (): GameProvider => {
     }, 10 * 1000)
   }
 
+  const startingGames: string[] = []
+
+  const setStartTimeout = (id: string) => {
+    if (startingGames.includes(id)) return
+
+    startingGames.push(id)
+
+    setTimeout(() => {
+      const game = games.find((game) => game.id === id)
+
+      if (!game) return
+
+      game.instance.startGame()
+    }, 60 * 1000)
+  }
+
   const memoryGameProvider: GameProvider = {
     create: (map) => {
       const game: RunningGame = {
@@ -46,9 +62,13 @@ const makeMemoryGameProvider = (): GameProvider => {
 
       if (playerIds[player.id]) throw new AppError('player already in game')
 
+      if (game.players.length >= 4) throw new AppError('game is full')
+
       game.instance.addTank(player.id)
       game.players.push(player)
       playerIds[player.id] = gameId
+
+      if (game.players.length > 1) setStartTimeout(gameId)
 
       return game
     },

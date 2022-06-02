@@ -42,6 +42,9 @@ const PlayGame = () => {
 
     socket.on('setup', (data) => {
       const game = createGame({ map: maps[data.map] })
+      data.state.tanks.forEach((tank) => {
+        game.addTank(tank.id, tank.state.position)
+      })
       game.setState(data.state)
 
       gameRef.current = game
@@ -78,6 +81,14 @@ const PlayGame = () => {
     })
 
     socket.on('stateChanged', (data) => {
+      gameRef.current.setState(data)
+    })
+
+    socket.on('startCountdown', (data) => {
+      console.log('startCountdown', data)
+    })
+
+    socket.on('startGame', (data) => {
       gameRef.current.setState(data)
     })
 

@@ -23,6 +23,7 @@ export interface ITankState {
 export interface ITank {
   setPosition(position: IPosition): void
   makeAction(action: IAction): void
+  setState(state: ITankState): void
 
   subscribe(observer: IObserver): void
   unsubscribe(observer: IObserver): void
@@ -149,13 +150,18 @@ const createTank = ({
     if (possibleActions[action]) possibleActions[action]()
   }
 
+  const setState = (newState: ITankState) => {
+    Object.assign(state, newState)
+  }
+
   return {
     id,
     state,
     subscribe,
     unsubscribe,
     setPosition,
-    makeAction
+    makeAction,
+    setState
   }
 }
 

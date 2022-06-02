@@ -16,29 +16,12 @@ import {
 } from '@heroicons/react/solid'
 import PageContainer from '../../components/PageContainer'
 import { useEffect, useRef } from 'react'
-import createTank, {
-  IContinuosAction,
-  ISingleAction
-} from '@tankz/game/factories/createTank'
+import createTank from '@tankz/game/factories/createTank'
 import { TANK_SIZE } from '@tankz/game/constants'
 import * as tankTypes from '../../constants/tanks'
 import createBullet, { IBullet } from '@tankz/game/factories/createBullet'
 import makeCheckLimitsCollision from '@tankz/game/factories/makeCheckLimitsCollision'
-
-const continuosKeys: Record<string, IContinuosAction> = {
-  ArrowUp: 'MoveForward',
-  ArrowDown: 'MoveBackward',
-  ArrowLeft: 'TurnLeft',
-  ArrowRight: 'TurnRight',
-  w: 'MoveForward',
-  s: 'MoveBackward',
-  a: 'TurnLeft',
-  d: 'TurnRight'
-}
-
-const singleKeys: Record<string, ISingleAction> = {
-  Space: 'Fire'
-}
+import makeKeyboardListener from '../../factories/makeKeyboardListener'
 
 const Instructions = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -118,27 +101,21 @@ const Instructions = () => {
     render()
 
     const interval = setInterval(() => {
-      tank.runActions()
       bullets.forEach(
         (bullet, index) => !bullet.moveBullet() && bullets.splice(index, 1)
       )
     }, 10)
 
-    document.onkeydown = (e) => {
-      if (continuosKeys[e.key]) tank.startAction(continuosKeys[e.key])
-    }
+    const keyboardListener = makeKeyboardListener()
 
-    document.onkeyup = (e) => {
-      if (continuosKeys[e.key]) tank.stopAction(continuosKeys[e.key])
-
-      if (singleKeys[e.code]) tank.makeSingleAction(singleKeys[e.code])
-    }
+    keyboardListener.subscribe((event) => {
+      tank.makeAction(event.payload)
+    })
 
     return () => {
       clearInterval(interval)
       cancelAnimationFrame(animationCode)
-      document.onkeydown = null
-      document.onkeyup = null
+      keyboardListener.destroy()
     }
   }, [])
 

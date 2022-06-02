@@ -4,7 +4,7 @@ import {
   STEP_ROTATION,
   TANK_SIZE
 } from '../constants'
-import { IPosition, ISimplePosition } from '../types'
+import { IEvent, IObserver, IPosition, ISimplePosition } from '../types'
 import getTankPoints from '../utils/getTankPoints'
 
 export type IContinuosAction =
@@ -15,37 +15,26 @@ export type IContinuosAction =
 export type ISingleAction = 'Fire'
 export type IAction = IContinuosAction | ISingleAction
 
-export interface IRawTankState {
-  id: string
+export interface ITankState {
   health: number
-  state: {
-    runningActions: IContinuosAction[]
-    position: IPosition
-  }
-}
-
-interface IState {
-  health: number
-  runningActions: Set<IContinuosAction>
   position: IPosition
 }
 
 export interface ITank {
-  runActions(): void
-  startAction(action: IContinuosAction): void
-  stopAction(action: IContinuosAction): void
-  makeSingleAction(action: ISingleAction): void
-  getState(): IRawTankState
+  setPosition(position: IPosition): void
+  makeAction(action: IAction): void
 
-  state: IState
+  subscribe(observer: IObserver): void
+  unsubscribe(observer: IObserver): void
+
+  state: ITankState
   id: string
 }
 
 interface ICreateTankProps {
   id: string
-  addBullet: (position: IPosition) => void
   defaultPosition: IPosition
-  defaultActions?: IContinuosAction[]
+  addBullet: (position: IPosition) => void
   checkCollision: (id: string, points: ISimplePosition[]) => boolean
 }
 
@@ -53,13 +42,29 @@ const createTank = ({
   id,
   addBullet,
   defaultPosition,
-  defaultActions = [],
   checkCollision
 }: ICreateTankProps): ITank => {
-  const state: IState = {
+  const state: ITankState = {
     health: DEFAULT_HEALTH,
-    runningActions: new Set(defaultActions),
     position: defaultPosition
+  }
+
+  const observers: IObserver[] = []
+
+  const subscribe = (observer: IObserver) => {
+    observers.push(observer)
+  }
+
+  const unsubscribe = (observer: IObserver) => {
+    observers.splice(observers.indexOf(observer), 1)
+  }
+
+  const notifyAll = (event: IEvent) => {
+    observers.forEach((observer) => observer(event))
+  }
+
+  const setPosition = (position: IPosition) => {
+    state.position = position
   }
 
   const moveTank = (step: number) => {
@@ -76,6 +81,13 @@ const createTank = ({
 
     state.position.x = newX
     state.position.y = newY
+
+    notifyAll({
+      type: 'tankMoved',
+      payload: {
+        ...state.position
+      }
+    })
   }
 
   const rotateTank = (step: number) => {
@@ -90,6 +102,11 @@ const createTank = ({
       return
 
     state.position.direction = newDirection
+
+    notifyAll({
+      type: 'tankRotated',
+      payload: { ...state.position }
+    })
   }
 
   const getMouth = () => {
@@ -128,39 +145,17 @@ const createTank = ({
     Fire: fireBullet
   }
 
-  const startAction = (action: IContinuosAction) => {
-    state.runningActions.add(action)
+  const makeAction = (action: IAction) => {
+    if (possibleActions[action]) possibleActions[action]()
   }
-
-  const stopAction = (action: IContinuosAction) => {
-    state.runningActions.delete(action)
-  }
-
-  const makeSingleAction = (action: ISingleAction) => {
-    possibleActions[action]()
-  }
-
-  const runActions = () => {
-    state.runningActions.forEach((action) => possibleActions[action]())
-  }
-
-  const getState = (): IRawTankState => ({
-    id,
-    health: state.health,
-    state: {
-      runningActions: [...state.runningActions],
-      position: state.position
-    }
-  })
 
   return {
     id,
-    runActions,
-    startAction,
-    stopAction,
-    makeSingleAction,
     state,
-    getState
+    subscribe,
+    unsubscribe,
+    setPosition,
+    makeAction
   }
 }
 

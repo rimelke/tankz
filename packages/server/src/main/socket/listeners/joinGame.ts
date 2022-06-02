@@ -7,11 +7,45 @@ const joinGameListener: ISocketListener = async (socket, gameId) => {
     playerId: socket.data.playerId
   })
 
+  console.log(
+    'game.instance.state.tanks',
+    game.instance.state.tanks.map((tank) => ({
+      id: tank.id,
+      pos: tank.state.position
+    }))
+  )
+
+  console.log(
+    'game.instance.getState().tanks',
+    game.instance.getState().tanks.map((tank) => ({
+      id: tank.id,
+      pos: tank.state.position
+    }))
+  )
+
   socket.data.gameId = gameId
   socket.emit('setup', {
     state: game.instance.getState(),
     id: socket.data.playerId,
     map: game.map
+  })
+
+  // socket.on('tank', ({ type, payload }) => {
+  //   const tank = game.instance.state.tanks.find(
+  //     (tank) => tank.id === socket.data.playerId
+  //   )
+
+  //   tank[type](payload)
+
+  //   console.log('position', tank.state.position)
+  // })
+
+  const tank = game.instance.state.tanks.find(
+    (tank) => tank.id === socket.data.playerId
+  )
+
+  socket.on('action', (data) => {
+    tank.makeAction(data)
   })
 
   game.instance.subscribe((event) => {

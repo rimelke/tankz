@@ -9,62 +9,21 @@ import Error from '../../../components/Error'
 import { Container, MapContainer } from './styled'
 import { TANK_SIZE } from '@tankz/game/constants'
 import * as tanksTypes from '../../../constants/tanks'
-import {
-  IContinuosAction,
-  ISingleAction,
-  ITank
-} from '@tankz/game/factories/createTank'
 import { getAuthorization } from '../../../contexts/AuthContext'
 import Back from '../../../components/Back'
+import makeKeyboardListener from '../../../factories/makeKeyboardListener'
 
 interface IGameData {
   map: keyof typeof maps
-}
-
-const continuosKeys: Record<string, IContinuosAction> = {
-  ArrowUp: 'MoveForward',
-  ArrowDown: 'MoveBackward',
-  ArrowLeft: 'TurnLeft',
-  ArrowRight: 'TurnRight',
-  w: 'MoveForward',
-  s: 'MoveBackward',
-  a: 'TurnLeft',
-  d: 'TurnRight'
-}
-
-const singleKeys: Record<string, ISingleAction> = {
-  Space: 'Fire'
 }
 
 const PlayGame = () => {
   const { id } = useParams()
 
   const gameRef = useRef<IGame>()
-  const tankRef = useRef<ITank>()
 
   const [gameData, setGameData] = useState<IGameData | null>(null)
   const [error, setError] = useState()
-
-  useEffect(() => {
-    if (!gameData) return
-
-    const tank: ITank = tankRef.current
-
-    document.onkeydown = (e) => {
-      if (continuosKeys[e.key]) tank.startAction(continuosKeys[e.key])
-    }
-
-    document.onkeyup = (e) => {
-      if (continuosKeys[e.key]) tank.stopAction(continuosKeys[e.key])
-
-      if (singleKeys[e.code]) tank.makeSingleAction(singleKeys[e.code])
-    }
-
-    return () => {
-      document.onkeydown = null
-      document.onkeyup = null
-    }
-  }, [gameData])
 
   useEffect(() => {
     if (!id) return
@@ -87,8 +46,6 @@ const PlayGame = () => {
 
       gameRef.current = game
 
-      tankRef.current = game.state.tanks.find((t) => t.id === data.id)
-
       setGameData({ map: data.map })
     })
 
@@ -100,10 +57,41 @@ const PlayGame = () => {
       gameRef.current.removeTank(data.id)
     })
 
+    socket.on('tankMoved', (data) => {
+      const tank = gameRef.current.state.tanks.find(
+        (tank) => tank.id === data.id
+      )
+
+      tank.setPosition(data.payload)
+    })
+
+    socket.on('tankRotated', (data) => {
+      const tank = gameRef.current.state.tanks.find(
+        (tank) => tank.id === data.id
+      )
+
+      tank.setPosition(data.payload)
+    })
+
+    socket.on('bulletAdded', (data) => {
+      gameRef.current.addBullet(data)
+    })
+
+    socket.on('stateChanged', (data) => {
+      gameRef.current.setState(data)
+    })
+
+    const keyboardListener = makeKeyboardListener()
+
+    keyboardListener.subscribe((event) => {
+      socket.emit(event.type, event.payload)
+    })
+
     socket.emit('joinGame', id)
 
     return () => {
       socket.disconnect()
+      keyboardListener.destroy()
     }
   }, [])
 

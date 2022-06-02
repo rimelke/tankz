@@ -19,3 +19,10 @@ export interface IMap {
   height: number
   objects: IMapObject[]
 }
+
+export interface IEvent {
+  type: string
+  payload: any
+}
+
+export type IObserver = (event: IEvent) => void

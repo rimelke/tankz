@@ -1,12 +1,19 @@
 import { BULLET_POWER, DEFAULT_HEALTH } from '../constants'
-import { IMap, IPosition, ISimplePosition, IMapObject } from '../types'
+import {
+  IMap,
+  IPosition,
+  ISimplePosition,
+  IMapObject,
+  IObserver,
+  IEvent
+} from '../types'
 import checkPointInRectangle from '../utils/checkPointInRectangle'
 import checkPointsCollision from '../utils/checkPointsCollision'
 import getLinesFromPoints from '../utils/getLinesFromPoints'
 import { ILine } from '../utils/getLinesIntersection'
 import getTankPoints, { getRawTankPoints } from '../utils/getTankPoints'
 import createBullet, { IBullet } from './createBullet'
-import createTank, { ITank, IRawTankState } from './createTank'
+import createTank, { ITank } from './createTank'
 import makeCheckLimitsCollision from './makeCheckLimitsCollision'
 
 interface IGameObject extends IMapObject {
@@ -24,22 +31,16 @@ export interface IGameState {
 }
 
 interface IRawState {
-  tanks: IRawTankState[]
+  tanks: ITank[]
   objects: IGameObject[]
 }
-
-export interface IEvent {
-  type: string
-  payload: any
-}
-
-export type IObserver = (event: IEvent) => void
 
 export interface IGame {
   state: IGameState
 
   addTank: (id: string, position?: IPosition) => ITank
   removeTank: (id: string) => void
+  addBullet: (position: IPosition) => void
   getState: () => IRawState
   setState: (state: IRawState) => void
   endGame: () => void
@@ -98,18 +99,36 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
   }
 
   const interval = setInterval(() => {
-    state.tanks.forEach((tank) => tank.runActions())
     state.bullets.forEach(
       (bullet, index) => !bullet.moveBullet() && state.bullets.splice(index, 1)
     )
   }, 10)
+
+  const getState = (): IRawState => ({
+    tanks: state.tanks,
+    objects: state.objects
+  })
+
+  const stateInterval = setInterval(() => {
+    notifyAll({
+      type: 'stateChanged',
+      payload: getState()
+    })
+  }, 2500)
 
   const decreaseHealth = (type: 'tanks' | 'objects', index: number) => {
     const entity = state[type][index]
 
     entity.state.health -= BULLET_POWER
 
-    if (entity.state.health <= 0) state[type].splice(index, 1)
+    if (entity.state.health <= 0) {
+      state[type].splice(index, 1)
+
+      notifyAll({
+        type: 'stateChanged',
+        payload: getState()
+      })
+    }
 
     return true
   }
@@ -146,6 +165,11 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     })
 
     state.bullets.push(bullet)
+
+    notifyAll({
+      type: 'bulletAdded',
+      payload: position
+    })
   }
 
   const tankCheckCollision = (id: string, points: ISimplePosition[]) =>
@@ -183,6 +207,16 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     return { x, y, direction }
   }
 
+  const getTankNotifier = (id: string) => (event: IEvent) => {
+    notifyAll({
+      type: event.type,
+      payload: {
+        id,
+        payload: event.payload
+      }
+    })
+  }
+
   const addTank = (id: string, position?: IPosition) => {
     const defaultPosition = position || getRandomPosition()
 
@@ -192,6 +226,8 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
       id,
       checkCollision: tankCheckCollision
     })
+
+    tank.subscribe(getTankNotifier(id))
 
     state.tanks.push(tank)
 
@@ -207,7 +243,10 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
   }
 
   const removeTank = (id: string) => {
-    state.tanks = state.tanks.filter((tank) => tank.id !== id)
+    const [tank] = state.tanks.splice(
+      state.tanks.findIndex((tank) => tank.id === id),
+      1
+    )
 
     notifyAll({
       type: 'removeTank',
@@ -215,19 +254,15 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
         id
       }
     })
+
+    tank.unsubscribe(getTankNotifier(id))
   }
 
-  const getState = (): IRawState => ({
-    tanks: state.tanks.map((tank) => tank.getState()),
-    objects: state.objects
-  })
-
-  const setState = (newState: { tanks: IRawTankState[] }) => {
+  const setState = (newState: { tanks: ITank[] }) => {
     state.tanks = newState.tanks.map((tank) =>
       createTank({
         addBullet,
         defaultPosition: tank.state.position,
-        defaultActions: tank.state.runningActions,
         id: tank.id,
         checkCollision: tankCheckCollision
       })
@@ -236,6 +271,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
 
   const endGame = () => {
     clearInterval(interval)
+    clearInterval(stateInterval)
   }
 
   return {
@@ -246,7 +282,8 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     setState,
     getState,
     subscribe,
-    unsubscribe
+    unsubscribe,
+    addBullet
   }
 }
 

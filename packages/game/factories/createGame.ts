@@ -17,6 +17,7 @@ interface IGameObject extends IMapObject {
 }
 
 export interface IGameState {
+  status: 'waiting' | 'playing'
   tanks: ITank[]
   bullets: IBullet[]
   objects: IGameObject[]
@@ -27,14 +28,24 @@ interface IRawState {
   objects: IGameObject[]
 }
 
+export interface IEvent {
+  type: string
+  payload: any
+}
+
+export type IObserver = (event: IEvent) => void
+
 export interface IGame {
   state: IGameState
 
-  addTank: (id: string) => ITank
+  addTank: (id: string, position?: IPosition) => ITank
   removeTank: (id: string) => void
   getState: () => IRawState
   setState: (state: IRawState) => void
   endGame: () => void
+
+  subscribe: (observer: IObserver) => void
+  unsubscribe: (observer: IObserver) => void
 }
 
 interface ICreateGameProps {
@@ -43,6 +54,7 @@ interface ICreateGameProps {
 
 const createGame = ({ map }: ICreateGameProps): IGame => {
   const state: IGameState = {
+    status: 'waiting',
     tanks: [],
     bullets: [],
     objects: map.objects.map((obj) => ({
@@ -69,6 +81,20 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
         }
       ]
     }))
+  }
+
+  const observers: IObserver[] = []
+
+  const notifyAll = (event: IEvent) => {
+    observers.forEach((observer) => observer(event))
+  }
+
+  const subscribe = (observer: IObserver) => {
+    observers.push(observer)
+  }
+
+  const unsubscribe = (observer: IObserver) => {
+    observers.splice(observers.indexOf(observer), 1)
   }
 
   const interval = setInterval(() => {
@@ -157,21 +183,38 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     return { x, y, direction }
   }
 
-  const addTank = (id: string) => {
+  const addTank = (id: string, position?: IPosition) => {
+    const defaultPosition = position || getRandomPosition()
+
     const tank = createTank({
       addBullet,
-      defaultPosition: getRandomPosition(),
+      defaultPosition,
       id,
       checkCollision: tankCheckCollision
     })
 
     state.tanks.push(tank)
 
+    notifyAll({
+      type: 'addTank',
+      payload: {
+        id,
+        position: defaultPosition
+      }
+    })
+
     return tank
   }
 
   const removeTank = (id: string) => {
     state.tanks = state.tanks.filter((tank) => tank.id !== id)
+
+    notifyAll({
+      type: 'removeTank',
+      payload: {
+        id
+      }
+    })
   }
 
   const getState = (): IRawState => ({
@@ -195,7 +238,16 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     clearInterval(interval)
   }
 
-  return { state, addTank, endGame, removeTank, setState, getState }
+  return {
+    state,
+    addTank,
+    endGame,
+    removeTank,
+    setState,
+    getState,
+    subscribe,
+    unsubscribe
+  }
 }
 
 export default createGame

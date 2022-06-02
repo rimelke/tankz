@@ -92,6 +92,14 @@ const PlayGame = () => {
       setGameData({ map: data.map })
     })
 
+    socket.on('addTank', (data) => {
+      gameRef.current.addTank(data.id, data.position)
+    })
+
+    socket.on('removeTank', (data) => {
+      gameRef.current.removeTank(data.id)
+    })
+
     socket.emit('joinGame', id)
 
     return () => {

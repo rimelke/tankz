@@ -46,11 +46,11 @@ const makeMemoryGameProvider = (): GameProvider => {
 
       if (playerIds[player.id]) throw new AppError('player already in game')
 
-      const tank = game.instance.addTank(player.id)
+      game.instance.addTank(player.id)
       game.players.push(player)
       playerIds[player.id] = gameId
 
-      return tank
+      return game
     },
     removePlayer: (playerId) => {
       if (!playerIds[playerId]) return
@@ -67,11 +67,6 @@ const makeMemoryGameProvider = (): GameProvider => {
       playerIds[playerId] = undefined
 
       if (game.players.length === 0) destroyGame(game)
-    },
-    getGame: (gameId) => {
-      const game = games.find((game) => game.id === gameId)
-
-      if (!game) throw new AppError('game not found')
 
       return game
     }

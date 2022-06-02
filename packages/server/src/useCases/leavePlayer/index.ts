@@ -11,7 +11,9 @@ interface IMakeLeavePlayerProps {
 
 const makeLeavePlayer = ({ gameProvider }: IMakeLeavePlayerProps) => {
   const leavePlayer = ({ playerId }: ILeavePlayerDTO) => {
-    gameProvider.removePlayer(playerId)
+    const game = gameProvider.removePlayer(playerId)
+
+    return { game }
   }
 
   const leavePlayerValidator = makeLeavePlayerValidator()

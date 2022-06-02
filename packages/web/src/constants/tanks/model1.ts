@@ -33,29 +33,25 @@ const model1: ITankFigure[] = [
     x: 29,
     y: 23,
     width: 11,
-    height: 21,
-    color: '#697094'
+    height: 21
   },
   {
     x: 0,
     y: 23,
     width: 11,
-    height: 21,
-    color: '#697094'
+    height: 21
   },
   {
     x: 29,
     y: 50,
     width: 11,
-    height: 20,
-    color: '#697094'
+    height: 20
   },
   {
     x: 0,
     y: 50,
     width: 11,
-    height: 20,
-    color: '#697094'
+    height: 20
   },
   {
     x: 7,

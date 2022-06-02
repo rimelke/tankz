@@ -125,6 +125,16 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
 
     entity.state.health -= BULLET_POWER
 
+    if (type === 'tanks') {
+      notifyAll({
+        type: 'tankHealthChanged',
+        payload: {
+          id: (entity as ITank).id,
+          health: entity.state.health
+        }
+      })
+    }
+
     if (entity.state.health <= 0) {
       state[type].splice(index, 1)
 

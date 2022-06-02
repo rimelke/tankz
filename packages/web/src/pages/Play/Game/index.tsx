@@ -6,8 +6,14 @@ import Map from '../../../components/Map'
 import * as maps from '@tankz/game/maps'
 import Loading from '../../../components/Loading'
 import Error from '../../../components/Error'
-import { Container, MapContainer } from './styled'
-import { TANK_SIZE } from '@tankz/game/constants'
+import {
+  BackContainer,
+  Container,
+  HealthBar,
+  HealthContainer,
+  MapContainer
+} from './styled'
+import { DEFAULT_HEALTH, TANK_SIZE } from '@tankz/game/constants'
 import * as tanksTypes from '../../../constants/tanks'
 import { getAuthorization } from '../../../contexts/AuthContext'
 import Back from '../../../components/Back'
@@ -21,9 +27,11 @@ const PlayGame = () => {
   const { id } = useParams()
 
   const gameRef = useRef<IGame>()
+  const tankIdRef = useRef<string>()
 
   const [gameData, setGameData] = useState<IGameData | null>(null)
   const [error, setError] = useState()
+  const [health, setHealth] = useState(DEFAULT_HEALTH)
 
   useEffect(() => {
     if (!id) return
@@ -50,6 +58,8 @@ const PlayGame = () => {
       gameRef.current = game
 
       setGameData({ map: data.map })
+
+      tankIdRef.current = data.id
     })
 
     socket.on('addTank', (data) => {
@@ -82,6 +92,19 @@ const PlayGame = () => {
 
     socket.on('stateChanged', (data) => {
       gameRef.current.setState(data)
+
+      const tank = data.tanks.find((tank) => tank.id === tankIdRef.current)
+
+      if (tank) setHealth(tank.state.health)
+    })
+
+    socket.on('tankHealthChanged', (data) => {
+      const tank = gameRef.current.state.tanks.find(
+        (tank) => tank.id === data.id
+      )
+
+      tank.state.health = data.health
+      if (data.id === tankIdRef.current) setHealth(data.health)
     })
 
     socket.on('startCountdown', (data) => {
@@ -138,8 +161,9 @@ const PlayGame = () => {
         tank.state.position.y + initialY
       )
       ctx.rotate(rAngle)
+      const fillColor = tank.id === tankIdRef.current ? '#00A098' : '#A10000'
       tanksTypes.model1.forEach(({ x, y, width, height, color }) => {
-        ctx.fillStyle = color
+        ctx.fillStyle = color || fillColor
         ctx.fillRect(x - initialX, y - initialY, width, height)
       })
       ctx.rotate(-rAngle)
@@ -155,10 +179,15 @@ const PlayGame = () => {
 
   return (
     <Container>
-      <Back />
+      <BackContainer>
+        <Back />
+      </BackContainer>
       <MapContainer>
         <Map drawFunction={drawGame} map={maps[gameData.map]} />
       </MapContainer>
+      <HealthContainer>
+        <HealthBar style={{ height: `${health}%` }} />
+      </HealthContainer>
     </Container>
   )
 }

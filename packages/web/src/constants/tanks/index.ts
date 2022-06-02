@@ -3,7 +3,7 @@ export interface ITankFigure {
   y: number
   width: number
   height: number
-  color: string
+  color?: string
 }
 
 export { default as model1 } from './model1'

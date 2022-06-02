@@ -39,47 +39,6 @@ const createBullet = ({ defaultPos, checkCollision }: IProps): IBullet => {
 
     if (checkCollision({ x: newX, y: newY })) return false
 
-    // if (
-    //   map.some(({ x, y, width, height }, mapIndex) => {
-    //     const isCollised =
-    //       newX > x && newX < x + width && newY > y && newY < y + height
-
-    //     if (isCollised) {
-    //       const mapObject = map[mapIndex]
-
-    //       mapObject.health = (mapObject.health || DEFAULT_HEALTH) - BULLET_POWER
-
-    //       if (mapObject.health <= 0) map.splice(mapIndex, 1)
-    //     }
-
-    //     return isCollised
-    //   }) ||
-    //   tanks.some((tank, tankIndex) => {
-    //     const isCollised = checkPointInTank(
-    //       { x: newX, y: newY },
-    //       getRawTankPoints(
-    //         tank.state.pos.x,
-    //         tank.state.pos.y,
-    //         tank.state.direction
-    //       )
-    //     )
-
-    //     if (isCollised) {
-    //       tank.state.health -= BULLET_POWER
-
-    //       if (tank.state.health <= 0) {
-    //         tanks.splice(tankIndex, 1)
-    //         tank.killTank()
-    //       }
-    //     }
-
-    //     return isCollised
-    //   })
-    // ) {
-    //   bullets.splice(index, 1)
-    //   return
-    // }
-
     state.position.x = newX
     state.position.y = newY
 

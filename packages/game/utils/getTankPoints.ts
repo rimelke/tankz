@@ -1,5 +1,5 @@
 import { TANK_SIZE } from '../constants'
-import { IRectangle } from './checkPointInTank'
+import { IRectangle } from './checkPointInRectangle'
 
 export interface IRawPoints {
   body: IRectangle

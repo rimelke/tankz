@@ -16,17 +16,14 @@ import {
 } from '@heroicons/react/solid'
 import PageContainer from '../../components/PageContainer'
 import { useEffect, useRef } from 'react'
-import {
+import createTank, {
   IContinuosAction,
   ISingleAction
 } from '@tankz/game/factories/createTank'
-import createGame from '@tankz/game'
 import { TANK_SIZE } from '@tankz/game/constants'
 import * as tankTypes from '../../constants/tanks'
-import { map1 } from '@tankz/game/maps'
-
-// import { TANK_SIZE } from '@tankz/game/constants'
-// import tankTypes from '@tankz/game/tankTypes'
+import createBullet, { IBullet } from '@tankz/game/factories/createBullet'
+import makeCheckLimitsCollision from '@tankz/game/factories/makeCheckLimitsCollision'
 
 const continuosKeys: Record<string, IContinuosAction> = {
   ArrowUp: 'MoveForward',
@@ -49,15 +46,32 @@ const Instructions = () => {
   useEffect(() => {
     if (!canvasRef.current) return
 
-    canvasRef.current.width = window.innerWidth / 1.5
-    canvasRef.current.height = window.innerHeight / 1.5
+    canvasRef.current.width = window.innerWidth
+    canvasRef.current.height = window.innerHeight
 
     const ctx = canvasRef.current.getContext('2d')
 
     if (!ctx) return
 
-    const game = createGame({ map: map1 })
-    const tank = game.addTank('tank1')
+    const bullets: IBullet[] = []
+
+    const checkLimitsCollision = makeCheckLimitsCollision(
+      window.innerWidth,
+      window.innerHeight
+    )
+    const tank = createTank({
+      id: 'tank',
+      addBullet: (position) => {
+        const bullet = createBullet({
+          defaultPos: position,
+          checkCollision: (position) => checkLimitsCollision([position])
+        })
+
+        bullets.push(bullet)
+      },
+      checkCollision: () => false,
+      defaultPosition: { x: 200, y: window.innerHeight / 2, direction: 90 }
+    })
 
     let animationCode: number
 
@@ -69,7 +83,7 @@ const Instructions = () => {
 
       ctx.fillStyle = '#555555'
 
-      game.state.bullets.forEach((bullet) => {
+      bullets.forEach((bullet) => {
         ctx.beginPath()
         ctx.arc(
           bullet.state.position.x,
@@ -103,6 +117,13 @@ const Instructions = () => {
 
     render()
 
+    const interval = setInterval(() => {
+      tank.runActions()
+      bullets.forEach(
+        (bullet, index) => !bullet.moveBullet() && bullets.splice(index, 1)
+      )
+    }, 10)
+
     document.onkeydown = (e) => {
       if (continuosKeys[e.key]) tank.startAction(continuosKeys[e.key])
     }
@@ -114,6 +135,7 @@ const Instructions = () => {
     }
 
     return () => {
+      clearInterval(interval)
       cancelAnimationFrame(animationCode)
       document.onkeydown = null
       document.onkeyup = null

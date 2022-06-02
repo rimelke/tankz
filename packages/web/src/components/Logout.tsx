@@ -11,6 +11,8 @@ const Container = styled.div`
 export const CustomButton = styled.span`
   transition: all 0.2s ease-in-out;
   cursor: pointer;
+  position: relative;
+  z-index: 1;
 
   &:hover {
     transform: scale(1.1);

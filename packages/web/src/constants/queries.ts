@@ -26,3 +26,16 @@ export const CREATE_GAME = gql`
     }
   }
 `
+
+export const GET_RUNNING_GAMES = gql`
+  query GetRunningGames {
+    getRunningGames {
+      id
+      map
+      players {
+        id
+        nickname
+      }
+    }
+  }
+`

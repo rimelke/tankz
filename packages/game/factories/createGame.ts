@@ -107,8 +107,8 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
       )
 
       return (
-        checkPointInRectangle(position, body) &&
-        checkPointInRectangle(position, cannon) &&
+        (checkPointInRectangle(position, body) ||
+          checkPointInRectangle(position, cannon)) &&
         decreaseHealth('tanks', index)
       )
     })

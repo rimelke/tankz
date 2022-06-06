@@ -1,7 +1,6 @@
 const path = require('path')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const Dotenv = require('dotenv-webpack')
-const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
   entry: path.resolve(__dirname, 'src', 'index.tsx'),
@@ -18,7 +17,8 @@ module.exports = {
     historyApiFallback: true
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    symlinks: false
   },
   module: {
     rules: [
@@ -38,11 +38,6 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: path.resolve(__dirname, 'public', 'index.html'),
       filename: 'index.html'
-    })
-  ],
-  externals: [
-    nodeExternals({
-      modulesFromFile: true
     })
   ]
 }

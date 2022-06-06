@@ -33,7 +33,7 @@ const makeJwtTokenProvider = () => {
       return new Promise((resolve, reject) => {
         jwt.verify(
           token,
-          process.env.SECRET || 'TOKEN_SECRET',
+          process.env.TOKEN_SECRET || 'TOKEN_SECRET',
           (err, decoded: any) => {
             if (err || !decoded) reject(new AppError('invalid token'))
             else resolve(decoded.id)

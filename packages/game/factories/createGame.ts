@@ -23,8 +23,16 @@ interface IGameObject extends IMapObject {
   lines: ILine[]
 }
 
+export type IGameStatus =
+  | 'init'
+  | 'waiting'
+  | 'preparing'
+  | 'starting'
+  | 'playing'
+  | 'paused'
+
 export interface IGameState {
-  status: 'waiting' | 'playing'
+  status: IGameStatus
   tanks: ITank[]
   bullets: IBullet[]
   objects: IGameObject[]
@@ -42,9 +50,9 @@ export interface IGame {
   removeTank: (id: string) => void
   addBullet: (position: IPosition) => void
   getState: () => IRawState
+  getCountdown: () => number
   setState: (state: IRawState) => void
   endGame: () => void
-  startGame: () => void
 
   subscribe: (observer: IObserver) => void
   unsubscribe: (observer: IObserver) => void
@@ -82,7 +90,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     }))
 
   const state: IGameState = {
-    status: 'waiting',
+    status: null,
     tanks: [],
     bullets: [],
     objects: getObjects()
@@ -120,72 +128,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     })
   }, 500)
 
-  const decreaseHealth = (type: 'tanks' | 'objects', index: number) => {
-    const entity = state[type][index]
-
-    entity.state.health -= BULLET_POWER
-
-    if (type === 'tanks') {
-      notifyAll({
-        type: 'tankHealthChanged',
-        payload: {
-          id: (entity as ITank).id,
-          health: entity.state.health
-        }
-      })
-    }
-
-    if (entity.state.health <= 0) {
-      state[type].splice(index, 1)
-
-      notifyAll({
-        type: 'stateChanged',
-        payload: getState()
-      })
-    }
-
-    return true
-  }
-
   const checkLimitsCollision = makeCheckLimitsCollision(map.width, map.height)
-  const bulletCheckCollision = (position: ISimplePosition) =>
-    checkLimitsCollision([position]) ||
-    state.objects.some(
-      (obj, index) =>
-        position.x > obj.x &&
-        position.x < obj.x + obj.width &&
-        position.y > obj.y &&
-        position.y < obj.y + obj.height &&
-        decreaseHealth('objects', index)
-    ) ||
-    state.tanks.some((tank, index) => {
-      const { body, cannon } = getRawTankPoints(
-        tank.state.position.x,
-        tank.state.position.y,
-        tank.state.position.direction
-      )
-
-      return (
-        (checkPointInRectangle(position, body) ||
-          checkPointInRectangle(position, cannon)) &&
-        decreaseHealth('tanks', index)
-      )
-    })
-
-  const addBullet = (position: IPosition) => {
-    const bullet = createBullet({
-      defaultPos: position,
-      checkCollision: bulletCheckCollision
-    })
-
-    state.bullets.push(bullet)
-
-    notifyAll({
-      type: 'bulletAdded',
-      payload: position
-    })
-  }
-
   const tankCheckCollision = (id: string, points: ISimplePosition[]) =>
     checkLimitsCollision(points) ||
     checkPointsCollision(
@@ -231,6 +174,221 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     })
   }
 
+  const statusData: {
+    timeoutCountdown: any
+    startTime: number
+    endTime: number
+    statusInfo: Partial<
+      Record<
+        IGameStatus,
+        {
+          time: number
+          action: () => void
+        }
+      >
+    >
+  } = {
+    timeoutCountdown: null,
+    startTime: null,
+    endTime: null,
+    statusInfo: {}
+  }
+
+  let playStartTime: number
+  const endGame = () => {
+    clearTimeout(statusData.timeoutCountdown)
+    clearInterval(interval)
+    clearInterval(stateInterval)
+
+    if (state.status !== 'playing' || state.tanks.length === 0) {
+      notifyAll({
+        type: 'gameEnded',
+        payload: {}
+      })
+
+      return
+    }
+
+    const winnerId = state.tanks.reduce(
+      (prev, tank) => (tank.state.health > prev.state.health ? tank : prev),
+      state.tanks[0]
+    ).id
+
+    notifyAll({
+      type: 'gameEnded',
+      payload: {
+        winnerId,
+        duration:
+          playStartTime && Math.round((Date.now() - playStartTime) / 1000)
+      }
+    })
+
+    observers.splice(0, observers.length)
+  }
+
+  const setStatus = (newStatus: IGameStatus) => {
+    state.status = newStatus
+    statusData.startTime = Date.now()
+    if (newStatus === 'playing') playStartTime = statusData.startTime
+
+    const setCountdown = () => {
+      clearTimeout(statusData.timeoutCountdown)
+
+      if (!statusData.statusInfo[newStatus]) {
+        statusData.endTime = null
+        statusData.timeoutCountdown = null
+        return
+      }
+
+      statusData.endTime =
+        statusData.startTime + statusData.statusInfo[newStatus].time * 1000
+      const now = Date.now()
+      const timeLeft = statusData.endTime - now
+
+      statusData.timeoutCountdown = setTimeout(() => {
+        statusData.statusInfo[newStatus].action()
+      }, timeLeft)
+
+      return statusData.statusInfo[newStatus].time
+    }
+
+    const countdown = setCountdown()
+
+    notifyAll({
+      type: 'statusChanged',
+      payload: {
+        status: newStatus,
+        countdown
+      }
+    })
+  }
+
+  statusData.statusInfo.init = {
+    time: 10,
+    action: () => endGame()
+  }
+  statusData.statusInfo.preparing = {
+    time: 60,
+    action: () => setStatus('starting')
+  }
+  statusData.statusInfo.starting = {
+    time: 10,
+    action: () => setStatus('playing')
+  }
+  statusData.statusInfo.playing = {
+    time: 180,
+    action: () => endGame()
+  }
+  statusData.statusInfo.paused = {
+    time: 10,
+    action: () => (state.tanks.length > 1 ? setStatus('playing') : endGame())
+  }
+
+  const removeTank = (id: string, wasKilled?: boolean) => {
+    const index = state.tanks.findIndex((tank) => tank.id === id)
+
+    if (index === -1) return
+
+    const [tank] = state.tanks.splice(index, 1)
+
+    notifyAll({
+      type: 'removeTank',
+      payload: {
+        id
+      }
+    })
+
+    tank.unsubscribe(getTankNotifier(id))
+
+    if (wasKilled) return
+
+    if (state.status === 'waiting') endGame()
+    else if (
+      (state.status === 'preparing' || state.status === 'starting') &&
+      state.tanks.length < 2
+    )
+      setStatus('waiting')
+    else if (state.status === 'playing' || state.status === 'paused')
+      setStatus('paused')
+  }
+
+  const decreaseHealth = (type: 'tanks' | 'objects', index: number) => {
+    const entity = state[type][index]
+
+    entity.state.health -= BULLET_POWER
+
+    if (type === 'tanks') {
+      notifyAll({
+        type: 'tankHealthChanged',
+        payload: {
+          id: (entity as ITank).id,
+          health: entity.state.health
+        }
+      })
+    }
+
+    if (entity.state.health <= 0) {
+      if (type === 'tanks') {
+        if (state.status === 'playing') removeTank((entity as ITank).id, true)
+        else {
+          const tank = state.tanks.find(
+            (tank) => tank.id === (entity as ITank).id
+          )
+
+          tank.setState({
+            health: DEFAULT_HEALTH,
+            position: tank.state.position
+          })
+        }
+      } else state[type].splice(index, 1)
+
+      notifyAll({
+        type: 'stateChanged',
+        payload: getState()
+      })
+    }
+
+    return true
+  }
+
+  const bulletCheckCollision = (position: ISimplePosition) =>
+    checkLimitsCollision([position]) ||
+    state.objects.some(
+      (obj, index) =>
+        position.x > obj.x &&
+        position.x < obj.x + obj.width &&
+        position.y > obj.y &&
+        position.y < obj.y + obj.height &&
+        decreaseHealth('objects', index)
+    ) ||
+    state.tanks.some((tank, index) => {
+      const { body, cannon } = getRawTankPoints(
+        tank.state.position.x,
+        tank.state.position.y,
+        tank.state.position.direction
+      )
+
+      return (
+        (checkPointInRectangle(position, body) ||
+          checkPointInRectangle(position, cannon)) &&
+        decreaseHealth('tanks', index)
+      )
+    })
+
+  const addBullet = (position: IPosition) => {
+    const bullet = createBullet({
+      defaultPos: position,
+      checkCollision: bulletCheckCollision
+    })
+
+    state.bullets.push(bullet)
+
+    notifyAll({
+      type: 'bulletAdded',
+      payload: position
+    })
+  }
+
   const addTank = (id: string, position?: IPosition) => {
     const defaultPosition = position || getRandomPosition()
 
@@ -253,23 +411,10 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
       }
     })
 
+    if (state.status === 'init') setStatus('waiting')
+    else if (state.status === 'waiting') setStatus('preparing')
+
     return tank
-  }
-
-  const removeTank = (id: string) => {
-    const [tank] = state.tanks.splice(
-      state.tanks.findIndex((tank) => tank.id === id),
-      1
-    )
-
-    notifyAll({
-      type: 'removeTank',
-      payload: {
-        id
-      }
-    })
-
-    tank.unsubscribe(getTankNotifier(id))
   }
 
   const setState = (newState: IRawState) => {
@@ -281,38 +426,14 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     )
   }
 
-  const endGame = () => {
-    clearInterval(interval)
-    clearInterval(stateInterval)
-  }
+  const getCountdown = () =>
+    statusData.endTime && Math.ceil((statusData.endTime - Date.now()) / 1000)
 
-  const startGame = () => {
-    const COUNTDOWN = 10 * 1000
-
-    notifyAll({
-      type: 'startCountdown',
-      payload: COUNTDOWN
-    })
-
-    setTimeout(() => {
-      state.status = 'playing'
-
-      state.bullets = []
-      state.objects = getObjects()
-      state.tanks.forEach((tank) => {
-        tank.state.position = getRandomPosition()
-        tank.state.health = DEFAULT_HEALTH
-      })
-
-      notifyAll({
-        type: 'startGame',
-        payload: getState()
-      })
-    }, COUNTDOWN)
-  }
+  setStatus('init')
 
   return {
     state,
+    getCountdown,
     addTank,
     endGame,
     removeTank,
@@ -320,8 +441,7 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     getState,
     subscribe,
     unsubscribe,
-    addBullet,
-    startGame
+    addBullet
   }
 }
 

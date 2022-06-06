@@ -33,6 +33,10 @@ export const MapContainer = styled.div`
 export const PlayerList = styled.ul`
   list-style: none;
   font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
 `
 
 export const GameId = styled.span`

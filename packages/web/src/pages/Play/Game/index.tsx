@@ -1,4 +1,4 @@
-import createGame, { IGame } from '@tankz/game'
+import createGame, { IGame, IGameStatus } from '@tankz/game'
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { io } from 'socket.io-client'
@@ -7,20 +7,25 @@ import * as maps from '@tankz/game/maps'
 import Loading from '../../../components/Loading'
 import Error from '../../../components/Error'
 import {
-  BackContainer,
+  UpContainer,
   Container,
   HealthBar,
   HealthContainer,
-  MapContainer
+  InfoContainer,
+  MapContainer,
+  EndGameContainer
 } from './styled'
 import { DEFAULT_HEALTH, TANK_SIZE } from '@tankz/game/constants'
 import * as tanksTypes from '../../../constants/tanks'
 import { getAuthorization } from '../../../contexts/AuthContext'
 import Back from '../../../components/Back'
 import makeKeyboardListener from '../../../factories/makeKeyboardListener'
+import Button from '../../../components/Button'
 
 interface IGameData {
   map: keyof typeof maps
+  status: IGameStatus
+  winnerId?: string
 }
 
 const PlayGame = () => {
@@ -28,10 +33,12 @@ const PlayGame = () => {
 
   const gameRef = useRef<IGame>()
   const tankIdRef = useRef<string>()
+  const drawCountRef = useRef<number>()
 
   const [gameData, setGameData] = useState<IGameData | null>(null)
   const [error, setError] = useState()
   const [health, setHealth] = useState(DEFAULT_HEALTH)
+  const [count, setCount] = useState<number>()
 
   useEffect(() => {
     if (!id) return
@@ -48,6 +55,19 @@ const PlayGame = () => {
       setError(err.message)
     })
 
+    let countdownInterval: any = null
+    const setCountdown = (countdown?: number) => {
+      clearInterval(countdownInterval)
+      setCount(countdown)
+
+      if (!countdown) return
+
+      countdownInterval = setInterval(() => {
+        setCount((oldCount) => oldCount - 1)
+        if (drawCountRef.current) drawCountRef.current -= 1
+      }, 1000)
+    }
+
     socket.on('setup', (data) => {
       const game = createGame({ map: maps[data.map] })
       data.state.tanks.forEach((tank) => {
@@ -57,7 +77,8 @@ const PlayGame = () => {
 
       gameRef.current = game
 
-      setGameData({ map: data.map })
+      setCountdown(data.countdown)
+      setGameData({ map: data.map, status: data.status })
 
       tankIdRef.current = data.id
     })
@@ -107,12 +128,23 @@ const PlayGame = () => {
       if (data.id === tankIdRef.current) setHealth(data.health)
     })
 
-    socket.on('startCountdown', (data) => {
-      console.log('startCountdown', data)
+    socket.on('statusChanged', (data) => {
+      if (data.status === 'starting') drawCountRef.current = data.countdown
+      else drawCountRef.current = undefined
+
+      setCountdown(data.countdown)
+      setGameData((oldGameData) => ({ ...oldGameData, status: data.status }))
     })
 
     socket.on('startGame', (data) => {
       gameRef.current.setState(data)
+    })
+
+    socket.on('gameEnded', (data) => {
+      setGameData((oldGameData) => ({
+        ...oldGameData,
+        winnerId: data.winnerId
+      }))
     })
 
     const keyboardListener = makeKeyboardListener()
@@ -126,6 +158,7 @@ const PlayGame = () => {
     return () => {
       socket.disconnect()
       keyboardListener.destroy()
+      clearInterval(countdownInterval)
     }
   }, [])
 
@@ -172,16 +205,44 @@ const PlayGame = () => {
         -(initialY + tank.state.position.y)
       )
     })
+
+    if (drawCountRef.current) {
+      const middleX = maps[gameData?.map].width / 2
+      const middleY = maps[gameData?.map].height / 2
+
+      ctx.clearRect(middleX - 100, middleY - 100, 200, 200)
+      ctx.fillStyle = '#000000'
+      ctx.textAlign = 'center'
+      ctx.font = '50px "Press Start 2P"'
+      ctx.fillText(drawCountRef.current.toString(), middleX, middleY)
+    }
   }
 
   if (error) return <Error>{error}</Error>
   if (!gameData) return <Loading />
+  if (gameData.winnerId)
+    return (
+      <EndGameContainer>
+        <p>
+          {gameData.winnerId === tankIdRef.current
+            ? 'Weee, you won!'
+            : 'Sorry, you lost!'}
+        </p>
+        <Button link="/">back</Button>
+      </EndGameContainer>
+    )
 
   return (
     <Container>
-      <BackContainer>
+      <UpContainer>
         <Back />
-      </BackContainer>
+        <InfoContainer>
+          <span>status: {gameData.status}</span>
+          {gameData.status !== 'waiting' && count && (
+            <span>count: {count}</span>
+          )}
+        </InfoContainer>
+      </UpContainer>
       <MapContainer>
         <Map drawFunction={drawGame} map={maps[gameData.map]} />
       </MapContainer>

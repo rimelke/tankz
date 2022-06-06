@@ -1,8 +1,8 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react'
+import { ButtonHTMLAttributes, Fragment, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
 export const CustomButton = styled.button`
-  text-decoration: none;
   color: #ffffff;
   background: black;
   transition: all 0.2s ease-in-out;
@@ -14,14 +14,25 @@ export const CustomButton = styled.button`
   }
 `
 
+export const CustomLink = styled(Link)``
+
 interface IButtonProps {
   children: ReactNode
+  link?: string
 }
 
 type IProps = IButtonProps & ButtonHTMLAttributes<HTMLButtonElement>
 
-const Button = ({ children, ...rest }: IProps) => (
-  <CustomButton {...rest}>{children}</CustomButton>
-)
+const Button = ({ children, link, ...rest }: IProps) => {
+  const Container = link
+    ? ({ children }) => <CustomLink to={link}>{children}</CustomLink>
+    : Fragment
+
+  return (
+    <Container>
+      <CustomButton {...rest}>{children}</CustomButton>
+    </Container>
+  )
+}
 
 export default Button

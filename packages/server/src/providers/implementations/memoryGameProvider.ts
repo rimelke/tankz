@@ -1,42 +1,25 @@
 import AppError from '@errors/AppError'
 import GameProvider, { RunningGame } from '@providers/GameProvider'
+import GameRepository from '@repositories/GameRepository'
 import createGame from '@tankz/game'
 import * as maps from '@tankz/game/maps'
 import { nanoid } from 'nanoid'
 
-const makeMemoryGameProvider = (): GameProvider => {
+interface IMakeMemoryGameProviderProps {
+  gameRepository: GameRepository
+}
+
+const makeMemoryGameProvider = ({
+  gameRepository
+}: IMakeMemoryGameProviderProps): GameProvider => {
   const games: RunningGame[] = []
   const playerIds: Record<string, string> = {}
 
   const destroyGame = (game: RunningGame) => {
-    game.instance.endGame()
-    games.splice(games.indexOf(game), 1)
-  }
-
-  const setDestroyTimeout = (id: string) => {
-    setTimeout(() => {
-      const game = games.find((game) => game.id === id)
-
-      if (!game || game.players.length > 0) return
-
-      destroyGame(game)
-    }, 10 * 1000)
-  }
-
-  const startingGames: string[] = []
-
-  const setStartTimeout = (id: string) => {
-    if (startingGames.includes(id)) return
-
-    startingGames.push(id)
-
-    setTimeout(() => {
-      const game = games.find((game) => game.id === id)
-
-      if (!game) return
-
-      game.instance.startGame()
-    }, 60 * 1000)
+    games.splice(
+      games.findIndex((g) => g.id === game.id),
+      1
+    )
   }
 
   const memoryGameProvider: GameProvider = {
@@ -50,11 +33,31 @@ const makeMemoryGameProvider = (): GameProvider => {
 
       games.push(game)
 
-      setDestroyTimeout(game.id)
+      game.instance.subscribe((event) => {
+        if (event.type !== 'gameEnded') return
+
+        const winnerId = event.payload.winnerId
+
+        if (winnerId) {
+          gameRepository.save({
+            map,
+            players: game.players,
+            winnerId,
+            duration: event.payload.duration
+          })
+        }
+
+        destroyGame(game)
+      })
 
       return game
     },
-    getRunningGames: () => games,
+    getRunningGames: () =>
+      games.filter(
+        (game) =>
+          ['waiting', 'preparing'].includes(game.instance.state.status) &&
+          game.players.length < 4
+      ),
     addPlayer: (gameId, player) => {
       const game = games.find((game) => game.id === gameId)
 
@@ -64,11 +67,14 @@ const makeMemoryGameProvider = (): GameProvider => {
 
       if (game.players.length >= 4) throw new AppError('game is full')
 
+      if (
+        !['init', 'waiting', 'preparing'].includes(game.instance.state.status)
+      )
+        throw new AppError('game is not waiting or preparing')
+
       game.instance.addTank(player.id)
       game.players.push(player)
       playerIds[player.id] = gameId
-
-      if (game.players.length > 1) setStartTimeout(gameId)
 
       return game
     },

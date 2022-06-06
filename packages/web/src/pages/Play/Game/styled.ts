@@ -1,5 +1,13 @@
 import styled from 'styled-components'
 
+export const EndGameContainer = styled.div`
+  padding-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+`
+
 export const Container = styled.div`
   margin-bottom: 2rem;
 
@@ -9,9 +17,19 @@ export const Container = styled.div`
   gap: 1rem;
 `
 
-export const BackContainer = styled.div`
+export const UpContainer = styled.div`
   grid-column-start: 2;
   display: flex;
+  justify-content: space-between;
+`
+
+export const InfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  font-size: 0.8rem;
+  align-items: flex-end;
+  gap: 0.5rem;
 `
 
 export const MapContainer = styled.div`

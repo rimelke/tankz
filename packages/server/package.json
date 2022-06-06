@@ -24,12 +24,13 @@
     "ts-jest": "^28.0.3",
     "ts-node": "^10.8.0",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.6.9",
     "tsconfig-paths": "^4.0.0"
   },
   "scripts": {
     "test": "jest",
     "dev": "tsnd --ignore-watch node_modules -r tsconfig-paths/register src/main/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc --build && tsc-alias",
     "start": "node dist/main/server.js"
   }
 }

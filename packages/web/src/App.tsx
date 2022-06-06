@@ -1,9 +1,3 @@
-// import { useEffect, useRef } from 'react'
-// import createGame from '@tankz/game'
-// import { TANK_SIZE } from '@tankz/game/constants'
-// import tanksTypes from '@tankz/game/tankTypes'
-// import { IContinuosAction, ISingleAction } from '@tankz/game/createTank'
-
 import './styles/global.css'
 import Routes from './routes'
 import Logo from './components/Logo'

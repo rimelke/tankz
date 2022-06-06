@@ -2,5 +2,9 @@
   "name": "@tankz/game",
   "version": "1.0.0",
   "main": "factories/createGame.ts",
-  "license": "MIT"
+  "license": "MIT",
+  "exports": {
+    ".": "./dist/factories/createGame.js",
+    "./maps": "./dist/maps/index.js"
+  }
 }

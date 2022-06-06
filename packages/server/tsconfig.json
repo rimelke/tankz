@@ -12,6 +12,8 @@
       "@main/*": ["./src/main/*"],
       "@errors/*": ["./src/errors/*"],
       "@infra/*": ["./src/infra/*"]
-    }
-  }
+    },
+    "outDir": "./dist"
+  },
+  "include": ["./src/**/*"]
 }

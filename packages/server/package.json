@@ -28,6 +28,8 @@
   },
   "scripts": {
     "test": "jest",
-    "dev": "tsnd --ignore-watch node_modules -r tsconfig-paths/register src/main/server.ts"
+    "dev": "tsnd --ignore-watch node_modules -r tsconfig-paths/register src/main/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main/server.js"
   }
 }

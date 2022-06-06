@@ -5,10 +5,13 @@ export default gql`
     id: ID!
     map: String!
     players: [Player!]!
+    winnerId: String
+    duration: Int
   }
 
   extend type Query {
     getRunningGames: [Game!]!
+    getSavedGames: [Game!]! @auth
   }
 
   extend type Mutation {

@@ -21,6 +21,7 @@ const Home = () => (
       <Menu
         items={[
           { label: 'Play', url: '/play' },
+          { label: 'History', url: '/history' },
           { label: 'Instructions', url: '/instructions' },
           { label: 'About', url: '/about' }
         ]}

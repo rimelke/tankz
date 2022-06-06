@@ -14,6 +14,45 @@ const makeMongoGameRepository = () => {
       })
 
       return { ...data, id: insertedId.toString() }
+    },
+    async findByPlayerId(playerId) {
+      const games = await gameCollection
+        .aggregate([
+          {
+            $match: {
+              players: {
+                $elemMatch: {
+                  $eq: new ObjectId(playerId)
+                }
+              }
+            }
+          },
+          {
+            $sort: {
+              _id: -1
+            }
+          },
+          {
+            $lookup: {
+              from: 'players',
+              localField: 'players',
+              foreignField: '_id',
+              as: 'players'
+            }
+          }
+        ])
+        .toArray()
+
+      return games.map((game) => ({
+        id: game._id.toString(),
+        map: game.map,
+        players: game.players.map((player) => ({
+          id: player._id.toString(),
+          nickname: player.nickname
+        })),
+        winnerId: game.winnerId ? game.winnerId.toString() : null,
+        duration: game.duration
+      }))
     }
   }
 

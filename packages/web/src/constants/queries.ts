@@ -39,3 +39,18 @@ export const GET_RUNNING_GAMES = gql`
     }
   }
 `
+
+export const GET_SAVED_GAMES = gql`
+  query GetSavedGames {
+    getSavedGames {
+      id
+      map
+      players {
+        id
+        nickname
+      }
+      winnerId
+      duration
+    }
+  }
+`

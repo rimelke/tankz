@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 
-export const GameList = styled.div`
+export const GameListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
@@ -55,4 +55,12 @@ export const JoinButton = styled(Link)`
   &:hover {
     transform: scale(1.1);
   }
+`
+
+interface IPlayerNicknameProps {
+  isCurrentPlayer: boolean
+}
+
+export const PlayerNickname = styled.li<IPlayerNicknameProps>`
+  color: ${({ isCurrentPlayer }) => (isCurrentPlayer ? '#00A098' : '#000')};
 `

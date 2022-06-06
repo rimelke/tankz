@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes as RouterRoutes, Route } from 'react-router-dom'
+import History from './pages/History'
 
 import Home from './pages/Home'
 import Instructions from './pages/Instructions'
@@ -17,6 +18,7 @@ const Routes = () => (
       <Route path="/play/create" element={<PlayCreate />} />
       <Route path="/play/join" element={<PlayJoin />} />
       <Route path="/play/find" element={<PlayFind />} />
+      <Route path="/history" element={<History />} />
 
       <Route path="/play/:id" element={<PlayGame />} />
     </RouterRoutes>

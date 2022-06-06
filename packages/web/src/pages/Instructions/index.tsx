@@ -86,7 +86,7 @@ const Instructions = () => {
       )
       ctx.rotate(rAngle)
       tankTypes.model1.forEach(({ x, y, width, height, color }) => {
-        ctx.fillStyle = color
+        ctx.fillStyle = color || '#00A098'
         ctx.fillRect(x - initialX, y - initialY, width, height)
       })
       ctx.rotate(-rAngle)

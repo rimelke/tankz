@@ -22,8 +22,7 @@ const Home = () => (
         items={[
           { label: 'Play', url: '/play' },
           { label: 'History', url: '/history' },
-          { label: 'Instructions', url: '/instructions' },
-          { label: 'About', url: '/about' }
+          { label: 'Instructions', url: '/instructions' }
         ]}
       />
     </Content>

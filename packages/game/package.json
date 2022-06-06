@@ -5,6 +5,8 @@
   "license": "MIT",
   "exports": {
     ".": "./dist/factories/createGame.js",
-    "./maps": "./dist/maps/index.js"
+    "./maps": "./dist/maps/index.js",
+    "./factories/": "./dist/factories/",
+    "./constants": "./dist/constants.js"
   }
 }

@@ -1,5 +1,7 @@
 const path = require('path')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
+const Dotenv = require('dotenv-webpack')
+const nodeExternals = require('webpack-node-externals')
 
 module.exports = {
   entry: path.resolve(__dirname, 'src', 'index.tsx'),
@@ -32,9 +34,15 @@ module.exports = {
     ]
   },
   plugins: [
+    new Dotenv(),
     new HtmlWebPackPlugin({
       template: path.resolve(__dirname, 'public', 'index.html'),
       filename: 'index.html'
+    })
+  ],
+  externals: [
+    nodeExternals({
+      modulesFromFile: true
     })
   ]
 }

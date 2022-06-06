@@ -43,11 +43,14 @@ const PlayGame = () => {
   useEffect(() => {
     if (!id) return
 
-    const socket = io('ws://localhost:4000', {
-      auth: {
-        authorization: getAuthorization()
+    const socket = io(
+      process.env.REACT_APP_SOCKET_URL || 'ws://localhost:4000',
+      {
+        auth: {
+          authorization: getAuthorization()
+        }
       }
-    })
+    )
 
     socket.on('error', (err) => {
       console.error(err)

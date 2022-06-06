@@ -89,6 +89,8 @@ const PlayGame = () => {
 
     socket.on('removeTank', (data) => {
       gameRef.current.removeTank(data.id)
+
+      if (data.id === tankIdRef.current) setHealth(undefined)
     })
 
     socket.on('tankMoved', (data) => {
@@ -246,9 +248,11 @@ const PlayGame = () => {
       <MapContainer>
         <Map drawFunction={drawGame} map={maps[gameData.map]} />
       </MapContainer>
-      <HealthContainer>
-        <HealthBar style={{ height: `${health}%` }} />
-      </HealthContainer>
+      {health && (
+        <HealthContainer>
+          <HealthBar style={{ height: `${health}%` }} />
+        </HealthContainer>
+      )}
     </Container>
   )
 }

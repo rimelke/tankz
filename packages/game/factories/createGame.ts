@@ -263,6 +263,15 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     })
   }
 
+  const setState = (newState: IRawState) => {
+    state.objects = newState.objects
+    state.tanks.forEach((tank) =>
+      tank.setState(
+        newState.tanks.find((t) => t.id === tank.id)?.state || tank.state
+      )
+    )
+  }
+
   statusData.statusInfo.init = {
     time: 10,
     action: () => endGame()
@@ -273,7 +282,19 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
   }
   statusData.statusInfo.starting = {
     time: 10,
-    action: () => setStatus('playing')
+    action: () => {
+      setState({
+        objects: getObjects(),
+        tanks: state.tanks.map((tank) => ({
+          ...tank,
+          state: {
+            health: DEFAULT_HEALTH,
+            position: getRandomPosition()
+          }
+        }))
+      })
+      setStatus('playing')
+    }
   }
   statusData.statusInfo.playing = {
     time: 180,
@@ -300,7 +321,11 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
 
     tank.unsubscribe(getTankNotifier(id))
 
-    if (wasKilled) return
+    if (wasKilled) {
+      if (state.tanks.length === 1) endGame()
+
+      return
+    }
 
     if (state.status === 'waiting') endGame()
     else if (
@@ -415,15 +440,6 @@ const createGame = ({ map }: ICreateGameProps): IGame => {
     else if (state.status === 'waiting') setStatus('preparing')
 
     return tank
-  }
-
-  const setState = (newState: IRawState) => {
-    state.objects = newState.objects
-    state.tanks.forEach((tank) =>
-      tank.setState(
-        newState.tanks.find((t) => t.id === tank.id)?.state || tank.state
-      )
-    )
   }
 
   const getCountdown = () =>

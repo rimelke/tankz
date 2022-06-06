@@ -20,6 +20,9 @@ const makeMemoryGameProvider = ({
       games.findIndex((g) => g.id === game.id),
       1
     )
+    game.players.forEach((player) => {
+      delete playerIds[player.id]
+    })
   }
 
   const memoryGameProvider: GameProvider = {
